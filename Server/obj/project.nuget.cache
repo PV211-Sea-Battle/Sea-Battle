@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "dgSpecHash": "LX3ldH6bK74npazEzfHfJTDw+EL0blTM/YU+21wrVkP+8Y6BUV6ucS1Rkos2ahZTgnLnEAq5INlhZUKrV4MOEw==",
+  "success": false,
+  "projectFilePath": "C:\\Users\\-_-\\source\\repos\\Sea Battle\\Server\\Server.csproj",
+  "expectedPackageFiles": [],
+  "logs": [
+    {
+      "code": "NU1201",
+      "level": "Error",
+      "message": "Проект Sea Battle несовместим с net8.0 (.NETCoreApp,Version=v8.0). Проект Sea Battle поддерживает: net8.0-windows7.0 (.NETCoreApp,Version=v8.0)",
+      "libraryId": "Sea Battle",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
+}

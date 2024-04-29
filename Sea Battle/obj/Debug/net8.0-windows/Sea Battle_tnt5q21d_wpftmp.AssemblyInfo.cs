@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Sea Battle")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2fd5d26fa8ebf0bca23bc3988aac7e39d8808cf6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+61aa9d7c996da7722127b19277f3b5148ba3bcbd")]
 [assembly: System.Reflection.AssemblyProductAttribute("Sea Battle")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Sea Battle")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

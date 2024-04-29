@@ -3,16 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\-_-\\source\\repos\\Sea Battle\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{1DF6F845-AFD6-4230-BB4C-FD92146E1E62}|Sea Battle\\Sea Battle.csproj|c:\\users\\-_-\\source\\repos\\sea battle\\sea battle\\views\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1DF6F845-AFD6-4230-BB4C-FD92146E1E62}|Sea Battle\\Sea Battle.csproj|solutionrelative:sea battle\\views\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{9D84CB2D-649C-4694-84B6-A65B9F73E8F7}|Server\\Server.csproj|c:\\users\\-_-\\source\\repos\\sea battle\\server\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{9D84CB2D-649C-4694-84B6-A65B9F73E8F7}|Server\\Server.csproj|solutionrelative:server\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1DF6F845-AFD6-4230-BB4C-FD92146E1E62}|Sea Battle\\Sea Battle.csproj|c:\\users\\-_-\\source\\repos\\sea battle\\sea battle\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{1DF6F845-AFD6-4230-BB4C-FD92146E1E62}|Sea Battle\\Sea Battle.csproj|solutionrelative:sea battle\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1DF6F845-AFD6-4230-BB4C-FD92146E1E62}|Sea Battle\\Sea Battle.csproj|c:\\users\\-_-\\source\\repos\\sea battle\\sea battle\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1DF6F845-AFD6-4230-BB4C-FD92146E1E62}|Sea Battle\\Sea Battle.csproj|solutionrelative:sea battle\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -22,7 +18,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
@@ -37,39 +33,31 @@
               "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
             },
             {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\-_-\\source\\repos\\Sea Battle\\Server\\Program.cs",
               "RelativeDocumentMoniker": "Server\\Program.cs",
               "ToolTip": "C:\\Users\\-_-\\source\\repos\\Sea Battle\\Server\\Program.cs",
               "RelativeToolTip": "Server\\Program.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAAFAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-04-28T17:49:58.769Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "MainWindow.xaml",
-              "DocumentMoniker": "C:\\Users\\-_-\\source\\repos\\Sea Battle\\Sea Battle\\MainWindow.xaml",
-              "RelativeDocumentMoniker": "Sea Battle\\MainWindow.xaml",
-              "ToolTip": "C:\\Users\\-_-\\source\\repos\\Sea Battle\\Sea Battle\\MainWindow.xaml",
-              "RelativeToolTip": "Sea Battle\\MainWindow.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-04-28T17:49:07.201Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "MainWindow.xaml.cs",
-              "DocumentMoniker": "C:\\Users\\-_-\\source\\repos\\Sea Battle\\Sea Battle\\MainWindow.xaml.cs",
-              "RelativeDocumentMoniker": "Sea Battle\\MainWindow.xaml.cs",
-              "ToolTip": "C:\\Users\\-_-\\source\\repos\\Sea Battle\\Sea Battle\\MainWindow.xaml.cs",
-              "RelativeToolTip": "Sea Battle\\MainWindow.xaml.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "DocumentMoniker": "C:\\Users\\-_-\\source\\repos\\Sea Battle\\Sea Battle\\Views\\MainWindow.xaml.cs",
+              "RelativeDocumentMoniker": "Sea Battle\\Views\\MainWindow.xaml.cs",
+              "ToolTip": "C:\\Users\\-_-\\source\\repos\\Sea Battle\\Sea Battle\\Views\\MainWindow.xaml.cs",
+              "RelativeToolTip": "Sea Battle\\Views\\MainWindow.xaml.cs",
+              "ViewState": "AQIAAAQAAAAAAAAAAAAAABcAAAA0AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-04-28T17:49:03.241Z",
               "EditorCaption": ""

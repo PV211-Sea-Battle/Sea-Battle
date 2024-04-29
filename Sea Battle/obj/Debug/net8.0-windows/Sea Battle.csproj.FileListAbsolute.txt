@@ -3,11 +3,9 @@ C:\Users\-_-\source\repos\Sea Battle\Sea Battle\bin\Debug\net8.0-windows\Sea Bat
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\bin\Debug\net8.0-windows\Sea Battle.runtimeconfig.json
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\bin\Debug\net8.0-windows\Sea Battle.dll
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\bin\Debug\net8.0-windows\Sea Battle.pdb
-C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\MainWindow.g.cs
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\App.g.cs
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle_MarkupCompile.cache
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle_MarkupCompile.lref
-C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\MainWindow.baml
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle.g.resources
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle.AssemblyInfoInputs.cache
@@ -18,3 +16,9 @@ C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\refint\
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle.pdb
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle.genruntimeconfig.cache
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\ref\Sea Battle.dll
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle.csproj.AssemblyReference.cache
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\MainWindow.g.cs
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\MainWindow.baml
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle.sourcelink.json
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle.csproj.Fody.CopyLocal.cache
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle.csproj.Fody.RuntimeCopyLocal.cache

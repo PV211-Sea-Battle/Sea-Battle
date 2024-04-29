@@ -22,3 +22,17 @@ C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\M
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle.sourcelink.json
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle.csproj.Fody.CopyLocal.cache
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Sea Battle.csproj.Fody.RuntimeCopyLocal.cache
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\BattlePrepareWindow.baml
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\BattleResultWindow.baml
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\BattleWindow.baml
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\GameListWindow.baml
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\RegistrationWindow.baml
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\SelectGameWindow.baml
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\BattlePrepareWindow.g.cs
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\BattleResultWindow.g.cs
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\BattleWindow.g.cs
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\GameListWindow.g.cs
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\RegistrationWindow.g.cs
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\Views\SelectGameWindow.g.cs
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\GeneratedInternalTypeHelper.g.cs
+C:\Users\-_-\source\repos\Sea Battle\Sea Battle\obj\Debug\net8.0-windows\App.baml

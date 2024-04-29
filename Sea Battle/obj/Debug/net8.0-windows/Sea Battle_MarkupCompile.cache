@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP
 C:\Users\-_-\source\repos\Sea Battle\Sea Battle\App.xaml
-1-1644662438
+71077908958
 
-5-666300234
+171477041199
 1991430940590
-Views\MainWindow.xaml;
+Views\BattlePrepareWindow.xaml;Views\BattleResultWindow.xaml;Views\BattleWindow.xaml;Views\GameListWindow.xaml;Views\MainWindow.xaml;Views\RegistrationWindow.xaml;Views\SelectGameWindow.xaml;
 
 False
 

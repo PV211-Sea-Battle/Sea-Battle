@@ -10,10 +10,10 @@ namespace Models
     public class Field
     {
         public int Id { get; set; }
-
-        [ForeignKey(nameof(UserId))]
         public int UserId { get; set; }
+        public bool IsActive { get; set; }
 
-        public List<Cell> Cells { get; set; } = new List<Cell>();
+        public virtual ICollection<Cell> Cells { get; set; }
+        public virtual User User { get; set; }
     }
 }

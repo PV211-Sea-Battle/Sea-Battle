@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "PmLCBPdgO+qJZd8i55RkNLtdlCeBCbLFfCczcFq84v871j4f4+XzCHsJep2OLaa9cprxGS7TX2aGj53lnwhy6Q==",
+  "dgSpecHash": "sTrQNKbVehxciTq2z2iLQcKcPvVh8B2NGPP09uN0Q7TeNWNcZ60uVCdD6oBkjlevQXD0H9oI9ArMzgCR3c1qhw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\-_-\\source\\repos\\Sea Battle\\Models\\Models.csproj",
+  "projectFilePath": "D:\\SeaBattle\\Models\\Models.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

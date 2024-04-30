@@ -1,52 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
+  <ItemGroup />
+  <ItemGroup />
   <ItemGroup>
-    <ApplicationDefinition Update="App.xaml">
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Views\BattlePrepareWindow.xaml.cs">
-      <SubType>Code</SubType>
+    <Compile Update="Form1.cs">
+      <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Views\BattleResultWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\BattleWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\GameListWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\RegistrationWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\SelectGameWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Views\BattlePrepareWindow.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\BattleResultWindow.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\BattleWindow.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\GameListWindow.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\MainWindow.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\RegistrationWindow.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\SelectGameWindow.xaml">
-      <SubType>Designer</SubType>
-    </Page>
   </ItemGroup>
 </Project>

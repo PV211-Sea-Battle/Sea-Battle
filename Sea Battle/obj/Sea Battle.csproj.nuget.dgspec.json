@@ -44,12 +44,6 @@
       "frameworks": {
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
-          "dependencies": {
-            "PropertyChanged.Fody": {
-              "target": "Package",
-              "version": "[4.1.0, )"
-            }
-          },
           "imports": [
             "net461",
             "net462",
@@ -65,7 +59,7 @@
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             },
-            "Microsoft.WindowsDesktop.App.WPF": {
+            "Microsoft.WindowsDesktop.App.WindowsForms": {
               "privateAssets": "none"
             }
           },

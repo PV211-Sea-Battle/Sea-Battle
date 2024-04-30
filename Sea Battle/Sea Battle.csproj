@@ -5,12 +5,8 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <RootNamespace>Sea_Battle</RootNamespace>
     <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
-  </ItemGroup>
 
 </Project>

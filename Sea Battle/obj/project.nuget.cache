@@ -1,11 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "h6n/4LH1unR18w/3S+MxmpAcHx/PQzGlZCOpjatSdFbpxyHcrQommvgPDaAFl7xVB2JYfLkp48aUWrmG3m5/mg==",
+  "dgSpecHash": "CIpy8KN8szlCl8xvVBORYpGox/P23112nj3ooqja6KTakoFk4NOF/MqPnzgUvg+3dcFwKwMJTEbbSKXaY4R0qw==",
   "success": true,
   "projectFilePath": "C:\\Users\\-_-\\source\\repos\\Sea Battle\\Sea Battle\\Sea Battle.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\-_-\\.nuget\\packages\\fody\\6.6.4\\fody.6.6.4.nupkg.sha512",
-    "C:\\Users\\-_-\\.nuget\\packages\\propertychanged.fody\\4.1.0\\propertychanged.fody.4.1.0.nupkg.sha512"
-  ],
+  "expectedPackageFiles": [],
   "logs": []
 }

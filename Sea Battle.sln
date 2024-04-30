@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34723.18
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sea Battle", "Sea Battle\Sea Battle.csproj", "{1DF6F845-AFD6-4230-BB4C-FD92146E1E62}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Server\Server.csproj", "{9D84CB2D-649C-4694-84B6-A65B9F73E8F7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Models", "Models\Models.csproj", "{9A13ED6D-4266-4785-BE85-1662A17B30C6}"
@@ -20,10 +18,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1DF6F845-AFD6-4230-BB4C-FD92146E1E62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1DF6F845-AFD6-4230-BB4C-FD92146E1E62}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1DF6F845-AFD6-4230-BB4C-FD92146E1E62}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1DF6F845-AFD6-4230-BB4C-FD92146E1E62}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9D84CB2D-649C-4694-84B6-A65B9F73E8F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9D84CB2D-649C-4694-84B6-A65B9F73E8F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D84CB2D-649C-4694-84B6-A65B9F73E8F7}.Release|Any CPU.ActiveCfg = Release|Any CPU

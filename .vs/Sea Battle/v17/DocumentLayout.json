@@ -3,16 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{4D557C68-92B3-4A5C-88A5-49714052FACD}|Sea Battle\\Sea Battle.csproj|c:\\users\\nikita\\desktop\\c#_gay_blachole_killer\\seabattleexam\\sea battle\\authpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4D557C68-92B3-4A5C-88A5-49714052FACD}|Sea Battle\\Sea Battle.csproj|solutionrelative:sea battle\\authpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{4D557C68-92B3-4A5C-88A5-49714052FACD}|Sea Battle\\Sea Battle.csproj|c:\\users\\nikita\\desktop\\c#_gay_blachole_killer\\seabattleexam\\sea battle\\authpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{4D557C68-92B3-4A5C-88A5-49714052FACD}|Sea Battle\\Sea Battle.csproj|solutionrelative:sea battle\\authpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{9D84CB2D-649C-4694-84B6-A65B9F73E8F7}|Server\\Server.csproj|c:\\users\\nikita\\desktop\\c#_gay_blachole_killer\\seabattleexam\\server\\server.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{9D84CB2D-649C-4694-84B6-A65B9F73E8F7}|Server\\Server.csproj|solutionrelative:server\\server.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4D557C68-92B3-4A5C-88A5-49714052FACD}|Sea Battle\\Sea Battle.csproj|c:\\users\\nikita\\desktop\\c#_gay_blachole_killer\\seabattleexam\\sea battle\\authpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4D557C68-92B3-4A5C-88A5-49714052FACD}|Sea Battle\\Sea Battle.csproj|solutionrelative:sea battle\\authpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{9A13ED6D-4266-4785-BE85-1662A17B30C6}|Models\\Models.csproj|c:\\users\\nikita\\desktop\\c#_gay_blachole_killer\\seabattleexam\\models\\response.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -62,7 +62,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 16,
+          "SelectedChildIndex": 14,
           "Children": [
             {
               "$type": "Bookmark",
@@ -116,7 +116,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Server.cs",
               "DocumentMoniker": "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Server\\Server.cs",
               "RelativeDocumentMoniker": "Server\\Server.cs",
@@ -186,20 +186,20 @@
               "RelativeDocumentMoniker": "Sea Battle\\AuthPage.Designer.cs",
               "ToolTip": "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Sea Battle\\AuthPage.Designer.cs",
               "RelativeToolTip": "Sea Battle\\AuthPage.Designer.cs",
-              "ViewState": "AQIAACAAAAAAAAAAAAAowG4AAAAkAAAA",
+              "ViewState": "AQIAACAAAAAAAAAAAAAowLwAAAAkAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-01T08:27:29.723Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "AuthPage.cs",
               "DocumentMoniker": "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Sea Battle\\AuthPage.cs",
               "RelativeDocumentMoniker": "Sea Battle\\AuthPage.cs",
               "ToolTip": "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Sea Battle\\AuthPage.cs",
               "RelativeToolTip": "Sea Battle\\AuthPage.cs",
-              "ViewState": "AQIAAAcAAAAAAAAAAAAMwJIAAABQAAAA",
+              "ViewState": "AQIAAB8AAAAAAAAAAAAgwM8AAABIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-01T08:26:59.813Z",
               "EditorCaption": ""
@@ -218,7 +218,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "AuthPage.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435]",
               "DocumentMoniker": "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Sea Battle\\AuthPage.cs",
               "RelativeDocumentMoniker": "Sea Battle\\AuthPage.cs",

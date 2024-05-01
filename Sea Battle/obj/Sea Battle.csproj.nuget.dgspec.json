@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\SeaBattle\\Sea Battle\\Sea Battle.csproj": {}
+    "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Sea Battle\\Sea Battle.csproj": {}
   },
   "projects": {
-    "D:\\SeaBattle\\Models\\Models.csproj": {
+    "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Models\\Models.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\SeaBattle\\Models\\Models.csproj",
+        "projectUniqueName": "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Models\\Models.csproj",
         "projectName": "Models",
-        "projectPath": "D:\\SeaBattle\\Models\\Models.csproj",
-        "packagesPath": "C:\\Users\\Зайчик Капитан\\.nuget\\packages\\",
-        "outputPath": "D:\\SeaBattle\\Models\\obj\\",
+        "projectPath": "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Models\\Models.csproj",
+        "packagesPath": "C:\\Users\\Nikita\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Models\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Зайчик Капитан\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Nikita\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -65,24 +65,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.202/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\SeaBattle\\Sea Battle\\Sea Battle.csproj": {
+    "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Sea Battle\\Sea Battle.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\SeaBattle\\Sea Battle\\Sea Battle.csproj",
+        "projectUniqueName": "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Sea Battle\\Sea Battle.csproj",
         "projectName": "Sea Battle",
-        "projectPath": "D:\\SeaBattle\\Sea Battle\\Sea Battle.csproj",
-        "packagesPath": "C:\\Users\\Зайчик Капитан\\.nuget\\packages\\",
-        "outputPath": "D:\\SeaBattle\\Sea Battle\\obj\\",
+        "projectPath": "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Sea Battle\\Sea Battle.csproj",
+        "packagesPath": "C:\\Users\\Nikita\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Sea Battle\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Зайчик Капитан\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Nikita\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -98,8 +98,8 @@
           "net8.0-windows7.0": {
             "targetAlias": "net8.0-windows",
             "projectReferences": {
-              "D:\\SeaBattle\\Models\\Models.csproj": {
-                "projectPath": "D:\\SeaBattle\\Models\\Models.csproj"
+              "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Models\\Models.csproj": {
+                "projectPath": "C:\\Users\\Nikita\\Desktop\\C#_gay_blachole_killer\\SeaBattleExam\\Models\\Models.csproj"
               }
             }
           }
@@ -137,7 +137,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.202/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

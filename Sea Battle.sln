@@ -12,7 +12,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решен
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sea Battle", "Sea Battle\Sea Battle.csproj", "{4D557C68-92B3-4A5C-88A5-49714052FACD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sea Battle", "Sea Battle\Sea Battle.csproj", "{4D557C68-92B3-4A5C-88A5-49714052FACD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{7A72935C-77EA-4629-A029-85CB0368898E}"
+	ProjectSection(SolutionItems) = preProject
+		AuthPic.jpg = AuthPic.jpg
+		icon.ico = icon.ico
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

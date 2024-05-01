@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Models
 {
+    [Serializable]
     public class User
     {
-       //я тут потренировался 
         public int Id { get; set; }
         public string Login { get; set; } = null!;
         public string Password { get; set; } = null!;

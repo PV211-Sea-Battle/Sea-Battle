@@ -39,6 +39,8 @@ namespace Server
         {
             builder.Entity<Field>().HasOne(f => f.User);
             builder.Entity<Field>().HasMany(f => f.Cells);
+
+            builder.Entity<User>().HasIndex(u => u.Login).IsUnique();
         }
     }
 }

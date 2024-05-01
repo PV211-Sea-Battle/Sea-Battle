@@ -1,9 +1,12 @@
 ﻿#pragma warning disable SYSLIB0011
+#pragma warning disable CS8600
+#pragma warning disable CS8602 //мозолят глаза там, где null'ов быть не может
 using Microsoft.Data.SqlClient;
 using System.Net.Sockets;
 using System.Net;
 using System.Runtime.Serialization.Formatters.Binary;
 using Microsoft.Extensions.Configuration;
+using Models;
 
 namespace Server
 {
@@ -16,9 +19,9 @@ namespace Server
             int port = 9001;
             IPAddress ipAddress = IPAddress.Parse("127.0.0.1"); ;
             IPEndPoint ep;
-            TcpListener listener;
+            TcpListener listener = null!;
             BinaryFormatter bf = new BinaryFormatter();
-            DbServer db = new DbServer();
+            DbServer db = new();
 
             while (true)
             {
@@ -28,12 +31,119 @@ namespace Server
                     {
                         while (Console.ReadKey(true).Key != ConsoleKey.End) ;
                         _isServerStarted = false;
+                        listener.Stop();
                         Console.WriteLine($"\n\n[{DateTime.Now.ToLongTimeString()}] Server stopped.\n");
                     });
                     try
                     {
-                        //место для рабочего цикла
+                        /*
+                            [Будет удалено в следующем коммите]
+
+                            Для включения режима тестирования(работы сервера без получения/отправки реальных запросов/ответов) нужно:
+                            Закомментировать все строки с пометкой "+"
+                            Расскоментировать все строки с пометкой "-"
+                        */
+
+                        TcpClient acceptor = await listener.AcceptTcpClientAsync();   //+
+                        NetworkStream ns = acceptor.GetStream();                      //+
+                        Request request = (Request)bf.Deserialize(ns);    //+
+
+                        //Request request = new Request();                    //-
+                        //await Console.Out.WriteAsync($"\n\n[DEBUG] Enter Header>");    //-
+                        //request.Header = await Console.In.ReadLineAsync()??"";            //-
+
+                        switch (request.Header)
+                        {
+                            case "SIGN IN":
+                                User user = request.User;                 //+
+                                //User user = new();                          //-
+                                //await Console.Out.WriteAsync("\nLogin>"); user.Login = await Console.In.ReadLineAsync() ?? "";  //-
+                                //await Console.Out.WriteAsync("\nPass>"); user.Password = await Console.In.ReadLineAsync() ?? "";  //-
+
+                                string login = user.Login;
+                                string pass = user.Password;
+
+                                user = db.SignUp(login, pass);
+                                if (user is not null)
+                                {
+                                    var regResponce = new Responce()
+                                    {
+                                        User = user
+                                    };
+                                    bf.Serialize(ns, regResponce);        //+ 
+                                    //Console.WriteLine("success");           //-
+                                }
+                                else
+                                {
+                                    var signResponce = new Responce()
+                                    {
+                                        ErrorMessage = "An error occured during authentication:\nIncorrect login or password."
+                                    };
+                                    bf.Serialize(ns, signResponce);        //+ 
+                                    //Console.WriteLine("failure");           //-
+                                }
+                                break;
+                            case "REGISTER":
+                                user = request.User;                      //+
+                                //user = new();                               //-
+                                await Console.Out.WriteAsync("\nLogin>"); user.Login = await Console.In.ReadLineAsync() ?? "";  //-
+                                await Console.Out.WriteAsync("\nPass>"); user.Password = await Console.In.ReadLineAsync() ?? "";  //-
+
+                                login = user.Login;
+                                pass = user.Password;
+
+                                if (db.RegisterUser(login, pass))
+                                {
+                                    var regResponce = new Responce()
+                                    {
+                                        User = db.SignUp(login, pass)
+                                    };
+                                    bf.Serialize(ns, regResponce);        //+
+                                    //await Console.Out.WriteLineAsync("success");           //-
+                                }
+                                else
+                                {
+                                    var regResponce = new Responce()
+                                    {
+                                        ErrorMessage = "An error occured during registration:\nLogin was taken."
+                                    };
+                                    bf.Serialize(ns, regResponce);        //+ 
+                                    //await Console.Out.WriteLineAsync("failure");           //-
+                                }
+                                break;
+                            case "GAME LIST":
+                                throw new NotImplementedException();
+                                break;
+                            case "JOIN":
+                                throw new NotImplementedException();
+                                break;
+                            case "CREATE":
+                                throw new NotImplementedException();
+                                break;
+                            case "READY":
+                                throw new NotImplementedException();
+                                break;
+                            case "ENEMY WAIT":
+                                throw new NotImplementedException();
+                                break;
+                            case "REFRESH":
+                                throw new NotImplementedException();
+                                break;
+                            case "SHOOT":
+                                throw new NotImplementedException();
+                                break;
+                            case "FORFREIT":
+                                throw new NotImplementedException();
+                                break;
+                            case "REMATCH":
+                                throw new NotImplementedException();
+                                break;
+                        }
+
+                        acceptor.Close();                                 //+
+                        ns.Close();                                       //+
                     }
+                    catch (SocketException) { }
                     catch (Exception ex)
                     {
                         Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message);
@@ -43,20 +153,36 @@ namespace Server
                 else
                 {
                     Task.Delay(100).Wait();
-                    Console.Write("Enter 'START' to start server. " +
+                    string? choice;
+                    do
+                    {
+                        Console.Write("Enter 'START' to start server. " +
                         "Without configuration it will use default IP and port (127.0.0.1:9001)." +
-                        "\nEnter 'EDIT' to set custom IP and port" +
-                        "\nEnter 'VIEWDB' to view first 5 rows of every table in database" +
-                        "\nEnter anything else to close the application\n>");
-                    string? choice = await Console.In.ReadLineAsync();
+                        "\nEnter 'EDIT' to set custom IP and port." +
+                        "\nEnter 'VIEWDB' to view first 5 rows of every table in database." +
+                        "\nEnter 'EXIT' to close the application.\n>");
+                        choice = await Console.In.ReadLineAsync();
+                    }
+                    while (choice.ToLower() != "start" && choice.ToLower() != "edit" && 
+                    choice.ToLower() != "viewdb" && choice.ToLower() != "exit");
+                    
                     switch(choice.ToLower())
                     {
                         case "start":
-                            ep = new IPEndPoint(ipAddress, port);
-                            listener = new TcpListener(ep);
-                            listener.Start();
-                            _isServerStarted = true;
-                            Console.WriteLine($"\n\n[{DateTime.Now.ToLongTimeString()}] Server started. Press End to stop it.\n");
+                            try
+                            {
+                                ep = new IPEndPoint(ipAddress, port);
+                                listener = new TcpListener(ep);
+                                listener.Start();
+                                _isServerStarted = true;
+                                Console.WriteLine($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
+                                    $"Server started with address {ipAddress}:{port}. Press End to stop it.\n");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Server starting error: " + ex.Message);
+                                return;
+                            }
                             break;
                         case "edit":
                             try
@@ -68,22 +194,14 @@ namespace Server
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"\n[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message);
+                                Console.WriteLine($"\n[{DateTime.Now.ToLongTimeString()}] IP/Port editing error: " + ex.Message);
                                 return;
                             }
                             break;
                         case "viewdb":
-                            try
-                            {
-                                throw new NotImplementedException("Работа с БД еще не реализована.");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message);
-                                return;
-                            }
+                            db.ShowFirst5RowsOfEveryTable();
                             break;
-                        default:
+                        case "exit":
                             return;
                     }
                 }

@@ -174,7 +174,6 @@ namespace Sea_Battle
                 _port = int.Parse(portField.Text);
                 _addr = IPAddress.Parse(ipField.Text);
                 _ep = new IPEndPoint(_addr, _port);
-                _bf = new BinaryFormatter();
 
                 connectButton.Enabled = false;
                 disconnectButton.Enabled = true;
@@ -190,7 +189,6 @@ namespace Sea_Battle
             _port = 0;
             _addr = null;
             _ep = null;
-            _bf = null;
 
             ipField.Clear();
             portField.Clear();

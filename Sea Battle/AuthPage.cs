@@ -46,7 +46,7 @@ namespace Sea_Battle
         {
             if(_addr != null && _port != 0)
             {
-                string actionKey = "LOGIN";
+                string actionKey = "SIGN IN";
                 string login = loginField.Text;
                 string password = passwordField.Text;
 

@@ -15,6 +15,7 @@ namespace Server
         public DbSet<User> User { get; set; }
         public DbSet<Field> Field { get; set; }
         public DbSet<Cell> Cell { get; set; }
+        public DbSet<Game> Game { get; set; }
 
         public ServerDbContext() : base(GenerateOptions())
         {
@@ -32,6 +33,14 @@ namespace Server
             var options = new DbContextOptionsBuilder<ServerDbContext>()
                 .UseSqlServer(config.GetConnectionString("SqlClient")).Options;
             return options;
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.Entity<Field>().HasOne(f => f.User);
+            builder.Entity<Field>().HasMany(f => f.Cells);
+
+            builder.Entity<User>().HasIndex(u => u.Login).IsUnique();
         }
     }
 }

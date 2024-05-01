@@ -1,37 +1,18 @@
-﻿#pragma warning disable SYSLIB0011
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Net.Sockets;
-using System.Net;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Models;
+﻿using Models;
 
 namespace Sea_Battle
 {
     public partial class AuthPage : Form
     {
         private int _port;
-        private IPAddress _addr;
-        private IPEndPoint _ep;
-
-        private TcpClient _client;
-        private BinaryFormatter _bf;
+        private string _addr;
 
         public AuthPage()
         {
             InitializeComponent();
 
             _port = int.Parse(portField.Text);
-            _addr = IPAddress.Parse(ipField.Text);
-            _ep = new IPEndPoint(_addr, _port);
-            _bf = new BinaryFormatter();
+            _addr = ipField.Text;
 
             connectButton.Enabled = false;
         }
@@ -42,123 +23,97 @@ namespace Sea_Battle
             passwordField.Clear();
         }
 
-        private void loginButton_Click(object sender, EventArgs e)
+        private async void loginButton_Click(object sender, EventArgs e)
         {
-            if(_addr != null && _port != 0)
+            try
             {
-                string actionKey = "SIGN IN";
-                string login = loginField.Text;
-                string password = passwordField.Text;
-
-                if (string.IsNullOrWhiteSpace(login))
+                if(_addr != null && _port != 0)
                 {
-                    MessageBox.Show("Enter the login", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
+                    string header = "SIGN IN";
+                    string login = loginField.Text;
+                    string password = passwordField.Text;
 
-                else if (string.IsNullOrWhiteSpace(password))
-                {
-                    MessageBox.Show("Enter the password", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-
-                else
-                {
-                    var request = new Request()
+                    if (string.IsNullOrWhiteSpace(login))
                     {
-                        ActionKey = actionKey,
-                        User = new User()
-                        {
-                            Login = login,
-                            Password = password
-                        }
-                    };
+                        MessageBox.Show("Enter the login", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
 
-                    _client = new TcpClient();
-                    _client.Connect(_ep);
-                    NetworkStream ns = _client.GetStream();
-                    _bf.Serialize(ns, request);
-
-                    Response response = (Response)_bf.Deserialize(ns);
-                    string? message = response.Message;
-
-                    if (message == "OK")
+                    else if (string.IsNullOrWhiteSpace(password))
                     {
-                        //переход на главную страницу
-                        Hide();
+                        MessageBox.Show("Enter the password", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
 
                     else
                     {
-                        MessageBox.Show("User not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        ClearBoxes();
-                    }
+                        var request = new Request()
+                        {
+                            Header = header,
+                            User = new User()
+                            {
+                                Login = login,
+                                Password = password
+                            }
+                        };
 
-                    ns.Close();
-                    _client.Close();
+                        Response response = await CurrentUser.SendMessageAsync(_addr, _port, request);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("You aren't connected to the server!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
-
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("You aren't connected to the server!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ClearBoxes();
             }
         }
 
-        private void reginButton_Click(object sender, EventArgs e)
+        private async void reginButton_Click(object sender, EventArgs e)
         {
-            if (_addr != null && _port != 0)
+            try
             {
-                string actionKey = "REGISTER";
-                string login = loginField.Text;
-                string password = passwordField.Text;
-
-                if (string.IsNullOrWhiteSpace(login))
+                if (_addr != null && _port != 0)
                 {
-                    MessageBox.Show("Entry the login", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
+                    string header = "REGISTER";
+                    string login = loginField.Text;
+                    string password = passwordField.Text;
 
-                else if (string.IsNullOrWhiteSpace(password))
-                {
-                    MessageBox.Show("Entry the password", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-
-                else
-                {
-                    var request = new Request()
+                    if (string.IsNullOrWhiteSpace(login))
                     {
-                        ActionKey = actionKey,
-                        User = new User()
-                        {
-                            Login = login,
-                            Password = password
-                        }
-                    };
-
-                    _client = new TcpClient();
-                    _client.Connect(_ep);
-                    NetworkStream ns = _client.GetStream();
-                    _bf.Serialize(ns, request);
-
-                    Response response = (Response)_bf.Deserialize(ns);
-                    string? message = response.Message;
-                    if (message == "OK")
-                    {
-                        MessageBox.Show("You created new account", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        ClearBoxes();
+                        MessageBox.Show("Entry the login", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
+
+                    else if (string.IsNullOrWhiteSpace(password))
+                    {
+                        MessageBox.Show("Entry the password", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+
                     else
                     {
-                        MessageBox.Show("Account with this login already exists", "Failure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        ClearBoxes();
-                    }
+                        var request = new Request()
+                        {
+                            Header = header,
+                            User = new User()
+                            {
+                                Login = login,
+                                Password = password
+                            }
+                        };
 
-                    ns.Close();
-                    _client.Close();
+                        Response response = await CurrentUser.SendMessageAsync(_addr, _port, request);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("You aren't connected to the server!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
-
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("You aren't connected to the server!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ClearBoxes();
             }
         }
 
@@ -172,8 +127,7 @@ namespace Sea_Battle
             try
             {
                 _port = int.Parse(portField.Text);
-                _addr = IPAddress.Parse(ipField.Text);
-                _ep = new IPEndPoint(_addr, _port);
+                _addr = ipField.Text;
 
                 connectButton.Enabled = false;
                 disconnectButton.Enabled = true;
@@ -187,8 +141,7 @@ namespace Sea_Battle
         private void disconnectButton_Click(object sender, EventArgs e)
         {
             _port = 0;
-            _addr = null;
-            _ep = null;
+            _addr = string.Empty;
 
             ipField.Clear();
             portField.Clear();
@@ -199,10 +152,8 @@ namespace Sea_Battle
 
         private void Button_EnabledChanged(object sender, EventArgs e)
         {
-            if (sender is Button)
+            if (sender is Button button)
             {
-                Button button = (Button)sender;
-
                 button.ForeColor = button.Enabled ? Color.White : Color.Gray;
                 button.BackColor = button.Enabled ? Color.Black : Color.DimGray;
             }

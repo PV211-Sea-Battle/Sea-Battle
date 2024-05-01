@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Models
+﻿namespace Models
 {
     [Serializable]
     public class User
@@ -12,7 +6,9 @@ namespace Models
         public int Id { get; set; }
         public string Login { get; set; } = null!;
         public string Password { get; set; } = null!;
+        public bool IsInGame { get; set; }
 
-        public List<Field> Fields { get; set; } = new List<Field>();
+        public ICollection<Field> Fields { get; set; }
+        public ICollection<Game> Games { get; set; }
     }
 }

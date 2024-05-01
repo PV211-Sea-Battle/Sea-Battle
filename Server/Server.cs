@@ -1,12 +1,11 @@
-﻿#pragma warning disable SYSLIB0011
-#pragma warning disable CS8600
-#pragma warning disable CS8602 //мозолят глаза там, где null'ов быть не может
-using Microsoft.Data.SqlClient;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Net;
 using System.Runtime.Serialization.Formatters.Binary;
-using Microsoft.Extensions.Configuration;
 using Models;
+
+#pragma warning disable SYSLIB0011
+#pragma warning disable CS8600
+#pragma warning disable CS8602 //мозолят глаза там, где null'ов быть не может
 
 namespace Server
 {
@@ -20,7 +19,7 @@ namespace Server
             IPAddress ipAddress = IPAddress.Parse("127.0.0.1"); ;
             IPEndPoint ep;
             TcpListener listener = null!;
-            BinaryFormatter bf = new BinaryFormatter();
+            BinaryFormatter bf = new();
             DbServer db = new();
 
             while (true)
@@ -36,80 +35,67 @@ namespace Server
                     });
                     try
                     {
-                        /*
-                            [Будет удалено в следующем коммите]
-
-                            Для включения режима тестирования(работы сервера без получения/отправки реальных запросов/ответов) нужно:
-                            Закомментировать все строки с пометкой "+"
-                            Расскоментировать все строки с пометкой "-"
-                        */
-
-                        TcpClient acceptor = await listener.AcceptTcpClientAsync();   //+
-                        NetworkStream ns = acceptor.GetStream();                      //+
-                        Request request = (Request)bf.Deserialize(ns);    //+
-
-                        //Request request = new Request();                    //-
-                        //await Console.Out.WriteAsync($"\n\n[DEBUG] Enter Header>");    //-
-                        //request.Header = await Console.In.ReadLineAsync()??"";            //-
+                        TcpClient acceptor = await listener.AcceptTcpClientAsync();
+                        NetworkStream ns = acceptor.GetStream();
+                        Request request = (Request)bf.Deserialize(ns);
 
                         switch (request.Header)
                         {
                             case "SIGN IN":
-                                User user = request.User;                 //+
-                                //User user = new();                          //-
-                                //await Console.Out.WriteAsync("\nLogin>"); user.Login = await Console.In.ReadLineAsync() ?? "";  //-
-                                //await Console.Out.WriteAsync("\nPass>"); user.Password = await Console.In.ReadLineAsync() ?? "";  //-
-
+                                User user = request.User;
+                                string status = "FAILURE";
                                 string login = user.Login;
                                 string pass = user.Password;
 
                                 user = db.SignUp(login, pass);
                                 if (user is not null)
                                 {
-                                    var regResponce = new Responce()
+                                    var signResponse = new Response()
                                     {
                                         User = user
                                     };
-                                    bf.Serialize(ns, regResponce);        //+ 
-                                    //Console.WriteLine("success");           //-
+                                    bf.Serialize(ns, signResponse);
+                                    Console.WriteLine($"\n\n[{DateTime.Now.ToLongTimeString()}] Server stopped.\n");
+                                    status = "SUCCESS";
                                 }
                                 else
                                 {
-                                    var signResponce = new Responce()
+                                    var signResponse = new Response()
                                     {
                                         ErrorMessage = "An error occured during authentication:\nIncorrect login or password."
                                     };
-                                    bf.Serialize(ns, signResponce);        //+ 
-                                    //Console.WriteLine("failure");           //-
+                                    bf.Serialize(ns, signResponse);
                                 }
+
+                                await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
+                                    $"SIGN IN request. Login: {user.Login} | Status: {status} \n");
                                 break;
                             case "REGISTER":
-                                user = request.User;                      //+
-                                //user = new();                               //-
-                                await Console.Out.WriteAsync("\nLogin>"); user.Login = await Console.In.ReadLineAsync() ?? "";  //-
-                                await Console.Out.WriteAsync("\nPass>"); user.Password = await Console.In.ReadLineAsync() ?? "";  //-
-
+                                user = request.User;
+                                status = "FAILURE";
                                 login = user.Login;
                                 pass = user.Password;
 
                                 if (db.RegisterUser(login, pass))
                                 {
-                                    var regResponce = new Responce()
+                                    var regResponse = new Response()
                                     {
                                         User = db.SignUp(login, pass)
                                     };
-                                    bf.Serialize(ns, regResponce);        //+
-                                    //await Console.Out.WriteLineAsync("success");           //-
+                                    bf.Serialize(ns, regResponse);
+                                    status = "SUCCESS";
                                 }
                                 else
                                 {
-                                    var regResponce = new Responce()
+                                    var regResponse = new Response()
                                     {
                                         ErrorMessage = "An error occured during registration:\nLogin was taken."
                                     };
-                                    bf.Serialize(ns, regResponce);        //+ 
-                                    //await Console.Out.WriteLineAsync("failure");           //-
+                                    bf.Serialize(ns, regResponse);
                                 }
+
+                                await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
+                                    $"REGISTER request. Login: {user.Login} | Status: {status} \n");
                                 break;
                             case "GAME LIST":
                                 throw new NotImplementedException();
@@ -132,7 +118,7 @@ namespace Server
                             case "SHOOT":
                                 throw new NotImplementedException();
                                 break;
-                            case "FORFREIT":
+                            case "FORFEIT":
                                 throw new NotImplementedException();
                                 break;
                             case "REMATCH":
@@ -140,8 +126,8 @@ namespace Server
                                 break;
                         }
 
-                        acceptor.Close();                                 //+
-                        ns.Close();                                       //+
+                        acceptor.Close();
+                        ns.Close();
                     }
                     catch (SocketException) { }
                     catch (Exception ex)

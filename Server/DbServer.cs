@@ -109,6 +109,22 @@ namespace Server
             return games;
         }
 
-        //...
+        public Game JoinGame(int gameId, int userId)
+        {
+            try { _db = new ServerDbContext(); }
+            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
+            Game? game = (from g in _db.Game
+                       where g.Id == gameId
+                       select g).ToList().FirstOrDefault();
+            User? user = (from u in _db.User
+                          where u.Id == userId
+                          select u).ToList().FirstOrDefault();
+            if (game is null || user is null)
+                return null!;
+            game.ClientUserId = user.Id;
+            _db.SaveChanges();
+            game.User = null!;
+            return game;
+        }
     }
 }

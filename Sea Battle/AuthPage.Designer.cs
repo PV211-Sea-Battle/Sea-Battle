@@ -82,7 +82,6 @@
             disconnectButton.TabIndex = 13;
             disconnectButton.Text = "Disconnect";
             disconnectButton.UseVisualStyleBackColor = false;
-            disconnectButton.EnabledChanged += Button_EnabledChanged;
             disconnectButton.Click += disconnectButton_Click;
             // 
             // connectButton
@@ -95,7 +94,6 @@
             connectButton.TabIndex = 12;
             connectButton.Text = "Connect";
             connectButton.UseVisualStyleBackColor = false;
-            connectButton.EnabledChanged += Button_EnabledChanged;
             connectButton.Click += connectButton_Click;
             // 
             // portField

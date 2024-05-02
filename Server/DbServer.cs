@@ -1,25 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server
 {
     public class DbServer
     {
-        private void CreatingTest()
-        {
-            var db = new ServerDbContext();
-        }
-
+        private ServerDbContext _db = null!;
         public void ShowFirst5RowsOfEveryTable()
         {
-            using var db = new ServerDbContext();
-            var users = db.User.OrderByDescending(u => u.Id).ToList().Take(5);
+            try { _db = new ServerDbContext(); }
+            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return; }
+            var users = _db.User.OrderByDescending(u => u.Id).ToList().Take(5);
 
             Console.WriteLine("\nUsers:\n");
             foreach (var user in users)
@@ -28,7 +19,7 @@ namespace Server
                     $"Password: {user.Password} | Is in game?: {user.IsInGame}"); // конфиденциальность 80 лвла
             }
 
-            var games = db.Game.OrderByDescending(g => g.Id).ToList().Take(5);
+            var games = _db.Game.OrderByDescending(g => g.Id).ToList().Take(5);
             Console.WriteLine("\nGames:\n");
             foreach (var game in games)
             {
@@ -36,14 +27,14 @@ namespace Server
                     $"Password: {game.Password} | Winner: {game.Winner} | HostUserId: {game.HostUserId} | ClientUserId: {game.ClientUserId}");
             }
 
-            var fields = db.Field.OrderByDescending(f => f.Id).ToList().Take(5);
+            var fields = _db.Field.OrderByDescending(f => f.Id).ToList().Take(5);
             Console.WriteLine("\nFields:\n");
             foreach (var field in fields)
             {
                 Console.WriteLine($"Id: {field.Id} | UserId: {field.UserId} | IsActive?: {field.IsActive}");
             }
 
-            var cells = db.Cell.OrderByDescending(c => c.Id).ToList().Take(5);
+            var cells = _db.Cell.OrderByDescending(c => c.Id).ToList().Take(5);
             Console.WriteLine("\nCells:\n");
             foreach (var cell in cells)
             {
@@ -55,8 +46,9 @@ namespace Server
         public bool RegisterUser(string login, string pass)
         {
             bool check = true;
-            using var db = new ServerDbContext();
-            var users = db.User.ToList();
+            try { _db = new ServerDbContext(); }
+            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return false; }
+            var users = _db.User.ToList();
 
             foreach (var user in users)
                 if (user.Login == login)
@@ -66,13 +58,13 @@ namespace Server
             {
                 try
                 {
-                    db.User.Add(new()
+                    _db.User.Add(new()
                     {
                         Login = login,
                         Password = pass,
                         IsInGame = false
                     });
-                    db.SaveChanges();
+                    _db.SaveChanges();
                 }
                 catch (Exception ex) { Console.WriteLine(ex.Message); return false; }
                 return true;
@@ -82,8 +74,10 @@ namespace Server
         public User SignUp(string login, string pass)
         {
             User res = null!;
-            using var db = new ServerDbContext();
-            var users = db.User.ToList();
+            try { _db = new ServerDbContext(); }
+            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return res; }
+            
+            var users = _db.User.ToList();
 
             foreach (var user in users)
             {
@@ -99,6 +93,16 @@ namespace Server
                 }
             }
             return res;
+        }
+
+        public List<Game> GetGameList()
+        {
+            try { _db = new ServerDbContext(); }
+            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
+            var games = _db.Game
+                .Include(item => item.User)
+                .Where(item => item.ClientUserId == -1).ToList();
+            return games;
         }
 
         //...

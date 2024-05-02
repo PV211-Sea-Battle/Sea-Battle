@@ -8,6 +8,9 @@ namespace Sea_Battle
         {
             InitializeComponent();
 
+            connectButton.EnabledChanged += CurrentUser.ButtonEnabledChanged;
+            disconnectButton.EnabledChanged += CurrentUser.ButtonEnabledChanged;
+
             CurrentUser.port = int.Parse(portField.Text);
             CurrentUser.address = ipField.Text;
 
@@ -147,15 +150,6 @@ namespace Sea_Battle
 
             connectButton.Enabled = true;
             disconnectButton.Enabled = false;
-        }
-
-        private void Button_EnabledChanged(object sender, EventArgs e)
-        {
-            if (sender is Button button)
-            {
-                button.ForeColor = button.Enabled ? Color.White : Color.Gray;
-                button.BackColor = button.Enabled ? Color.Black : Color.DimGray;
-            }
         }
     }
 }

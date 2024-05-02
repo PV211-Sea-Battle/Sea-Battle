@@ -31,7 +31,10 @@
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainPage));
             groupBox1 = new GroupBox();
-            serverList = new ListBox();
+            serverList = new ListView();
+            columnHeader1 = new ColumnHeader();
+            columnHeader2 = new ColumnHeader();
+            columnHeader3 = new ColumnHeader();
             groupBox2 = new GroupBox();
             joinGameButton = new Button();
             createGameButton = new Button();
@@ -55,14 +58,36 @@
             // serverList
             // 
             serverList.BackColor = SystemColors.Desktop;
+            serverList.Columns.AddRange(new ColumnHeader[] { columnHeader1, columnHeader2, columnHeader3 });
+            serverList.Dock = DockStyle.Fill;
+            serverList.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             serverList.ForeColor = Color.White;
-            serverList.FormattingEnabled = true;
-            serverList.ItemHeight = 17;
-            serverList.Location = new Point(6, 24);
+            serverList.Location = new Point(3, 21);
+            serverList.MultiSelect = false;
             serverList.Name = "serverList";
-            serverList.Size = new Size(1136, 514);
-            serverList.TabIndex = 0;
+            serverList.Size = new Size(1142, 529);
+            serverList.TabIndex = 1;
+            serverList.UseCompatibleStateImageBehavior = false;
+            serverList.View = View.Details;
             serverList.SelectedIndexChanged += serverList_SelectedIndexChanged;
+            // 
+            // columnHeader1
+            // 
+            columnHeader1.Text = "Name";
+            columnHeader1.TextAlign = HorizontalAlignment.Center;
+            columnHeader1.Width = 250;
+            // 
+            // columnHeader2
+            // 
+            columnHeader2.Text = "Password";
+            columnHeader2.TextAlign = HorizontalAlignment.Center;
+            columnHeader2.Width = 100;
+            // 
+            // columnHeader3
+            // 
+            columnHeader3.Text = "Host";
+            columnHeader3.TextAlign = HorizontalAlignment.Center;
+            columnHeader3.Width = 250;
             // 
             // groupBox2
             // 
@@ -131,6 +156,7 @@
             Name = "MainPage";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Main page";
+            FormClosing += MainPage_FormClosing;
             Load += MainPage_Load;
             groupBox1.ResumeLayout(false);
             groupBox2.ResumeLayout(false);
@@ -141,11 +167,14 @@
         #endregion
 
         private GroupBox groupBox1;
-        private ListBox serverList;
         private GroupBox groupBox2;
         private Label welcomeLabel;
         private Button createGameButton;
         private Button joinGameButton;
         private System.Windows.Forms.Timer timer;
+        private ListView serverList;
+        private ColumnHeader columnHeader1;
+        private ColumnHeader columnHeader2;
+        private ColumnHeader columnHeader3;
     }
 }

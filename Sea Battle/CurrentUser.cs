@@ -49,6 +49,15 @@ namespace Sea_Battle
             }
         }
 
+        public static void ButtonEnabledChanged(object? sender, EventArgs e)
+        {
+            if (sender is Button button)
+            {
+                button.ForeColor = button.Enabled ? Color.White : Color.Gray;
+                button.BackColor = button.Enabled ? Color.Black : Color.DimGray;
+            }
+        }
+
         // Пример использования метода SendMessageAsync
         private static async void Test()
         {

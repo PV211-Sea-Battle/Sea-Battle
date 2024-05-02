@@ -9,7 +9,9 @@ namespace Sea_Battle
     static class CurrentUser
     {
         public static User User { get; set; }
-        public static async Task<Response> SendMessageAsync(string address, int port, Request request, bool waitForResponse = true)
+        public static string address;
+        public static int port;
+        public static async Task<Response> SendMessageAsync(Request request, bool waitForResponse = true)
         {
             try
             {

@@ -55,7 +55,23 @@ namespace Sea_Battle
                             }
                         };
 
-                        Response response = await CurrentUser.SendMessageAsync(_addr, _port, request);
+                        CurrentUser.address = _addr;
+                        CurrentUser.port = _port;
+                        Response response = await CurrentUser.SendMessageAsync(request);
+
+                        //проверку нужно поменять, я не особо знаю как
+                        if (response.ErrorMessage == null)
+                        {
+                            CurrentUser.User = response.User;
+                            MainPage mainPage = new MainPage();
+                            mainPage.Show();
+                            Hide();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Incorrect login or password!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            ClearBoxes();
+                        }
                     }
                 }
                 else
@@ -102,7 +118,21 @@ namespace Sea_Battle
                             }
                         };
 
-                        Response response = await CurrentUser.SendMessageAsync(_addr, _port, request);
+                        CurrentUser.address = _addr;
+                        CurrentUser.port = _port;
+                        Response response = await CurrentUser.SendMessageAsync(request);
+
+                        //проверку нужно поменять, я не особо знаю как
+                        if (response.ErrorMessage == null)
+                        {
+                            MessageBox.Show("You created new account!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            ClearBoxes();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Account with this login already exists!", "Failure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            ClearBoxes();
+                        }
                     }
                 }
                 else

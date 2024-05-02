@@ -12,6 +12,7 @@ namespace Sea_Battle
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             Application.Run(new AuthPage());
+            //Application.Run(new GameLobbyPage());
         }
     }
 }

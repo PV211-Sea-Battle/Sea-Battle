@@ -8,14 +8,19 @@ namespace Sea_Battle
 {
     static class CurrentUser
     {
-        public static User User { get; set; }
-        public static string address;
-        public static int port;
+        public static User? user;
+        public static string? address;
+        public static int? port;
         public static async Task<Response> SendMessageAsync(Request request, bool waitForResponse = true)
         {
             try
             {
-                using TcpClient acceptor = new(address, port);
+                if (address is null || port is null)
+                {
+                    throw new Exception("You aren't connected to the server!");
+                }
+
+                using TcpClient acceptor = new(address, port.Value);
                 await using NetworkStream ns = acceptor.GetStream();
 
                 BinaryFormatter bf = new();
@@ -41,6 +46,48 @@ namespace Sea_Battle
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+
+        // Пример использования метода SendMessageAsync
+        private static async void Test()
+        {
+            // Создаем обработчик ошибок
+            // Так как метод SendMessageAsync вызывает throw если с сервера была отправлена ошибка. Line 38
+            // В throw передается свойство ErrorMessage класса Response. Line 40
+            try
+            {
+                // Создаем запрос на сервер
+                Request request = new()
+                {
+                    // Ключевое слово для сервера
+                    Header = "TEST",
+
+                    // Пользователь который обратился к серверу.
+                    // После входа в аккаунт он сохранен в переменной user класса CurrentUser. Line 11
+                    User = CurrentUser.user,
+
+                    // Добавляйте нужные параметры в класс Request в зависимости от запроса
+                    // Ожидаемые параметры от клиента я прописал в Trello
+                };
+
+                // Отправка запроса на сервер через метод SendMessageAsync
+                // Адресс и порт сервера сохранены в переменных address и port класса CurrentUser. Line 12, 13
+                // SendMessageAsync возвращает ответ от сервера Response. Line 36
+                // Если вам надо использовать ответ сервера, то сохраняйте ответ в переменную
+                Response response = await CurrentUser.SendMessageAsync(request);
+
+                // Делать проверку на ошибку с сервера в свойстве ErrorMessage не нужно
+                // Так как при наличии ошибки будет вызван throw, который перехватит наш catch. Line 87
+
+                // Если код дошел дальше вызова метода SendMessageAsync, значит ошибки у сервера не было
+                // Это означает что все прошло ОК, и можно делать нужные действия
+
+            }
+            catch (Exception ex)
+            {
+                // Вывод ошибки 
+                MessageBox.Show(ex.Message);
             }
         }
     }

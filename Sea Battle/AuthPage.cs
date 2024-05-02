@@ -4,15 +4,15 @@ namespace Sea_Battle
 {
     public partial class AuthPage : Form
     {
-        private int _port;
-        private string _addr;
-
         public AuthPage()
         {
             InitializeComponent();
 
-            _port = int.Parse(portField.Text);
-            _addr = ipField.Text;
+            CurrentUser.port = int.Parse(portField.Text);
+            CurrentUser.address = ipField.Text;
+
+            ipField.ReadOnly = true;
+            portField.ReadOnly = true;
 
             connectButton.Enabled = false;
         }
@@ -27,56 +27,38 @@ namespace Sea_Battle
         {
             try
             {
-                if(_addr != null && _port != 0)
+                string header = "SIGN IN";
+                string login = loginField.Text;
+                string password = passwordField.Text;
+
+                if (string.IsNullOrWhiteSpace(login))
                 {
-                    string header = "SIGN IN";
-                    string login = loginField.Text;
-                    string password = passwordField.Text;
-
-                    if (string.IsNullOrWhiteSpace(login))
-                    {
-                        MessageBox.Show("Enter the login", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-
-                    else if (string.IsNullOrWhiteSpace(password))
-                    {
-                        MessageBox.Show("Enter the password", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-
-                    else
-                    {
-                        var request = new Request()
-                        {
-                            Header = header,
-                            User = new User()
-                            {
-                                Login = login,
-                                Password = password
-                            }
-                        };
-
-                        CurrentUser.address = _addr;
-                        CurrentUser.port = _port;
-                        Response response = await CurrentUser.SendMessageAsync(request);
-
-                        //проверку нужно поменять, я не особо знаю как
-                        if (response.ErrorMessage == null)
-                        {
-                            CurrentUser.User = response.User;
-                            MainPage mainPage = new MainPage();
-                            mainPage.Show();
-                            Hide();
-                        }
-                        else
-                        {
-                            MessageBox.Show("Incorrect login or password!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            ClearBoxes();
-                        }
-                    }
+                    MessageBox.Show("Enter the login", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
+
+                else if (string.IsNullOrWhiteSpace(password))
+                {
+                    MessageBox.Show("Enter the password", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+
                 else
                 {
-                    MessageBox.Show("You aren't connected to the server!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    var request = new Request()
+                    {
+                        Header = header,
+                        User = new User()
+                        {
+                            Login = login,
+                            Password = password
+                        }
+                    };
+
+                    Response response = await CurrentUser.SendMessageAsync(request);
+
+                    CurrentUser.user = response.User;
+                    MainPage mainPage = new();
+                    mainPage.Show();
+                    Hide();
                 }
             }
             catch (Exception ex)
@@ -90,54 +72,35 @@ namespace Sea_Battle
         {
             try
             {
-                if (_addr != null && _port != 0)
+                string header = "REGISTER";
+                string login = loginField.Text;
+                string password = passwordField.Text;
+
+                if (string.IsNullOrWhiteSpace(login))
                 {
-                    string header = "REGISTER";
-                    string login = loginField.Text;
-                    string password = passwordField.Text;
-
-                    if (string.IsNullOrWhiteSpace(login))
-                    {
-                        MessageBox.Show("Entry the login", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-
-                    else if (string.IsNullOrWhiteSpace(password))
-                    {
-                        MessageBox.Show("Entry the password", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-
-                    else
-                    {
-                        var request = new Request()
-                        {
-                            Header = header,
-                            User = new User()
-                            {
-                                Login = login,
-                                Password = password
-                            }
-                        };
-
-                        CurrentUser.address = _addr;
-                        CurrentUser.port = _port;
-                        Response response = await CurrentUser.SendMessageAsync(request);
-
-                        //проверку нужно поменять, я не особо знаю как
-                        if (response.ErrorMessage == null)
-                        {
-                            MessageBox.Show("You created new account!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            ClearBoxes();
-                        }
-                        else
-                        {
-                            MessageBox.Show("Account with this login already exists!", "Failure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            ClearBoxes();
-                        }
-                    }
+                    MessageBox.Show("Entry the login", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
+
+                else if (string.IsNullOrWhiteSpace(password))
+                {
+                    MessageBox.Show("Entry the password", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+
                 else
                 {
-                    MessageBox.Show("You aren't connected to the server!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    var request = new Request()
+                    {
+                        Header = header,
+                        User = new User()
+                        {
+                            Login = login,
+                            Password = password
+                        }
+                    };
+
+                    Response response = await CurrentUser.SendMessageAsync(request);
+
+                    MessageBox.Show("You created new account!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
             catch (Exception ex)
@@ -156,8 +119,11 @@ namespace Sea_Battle
         {
             try
             {
-                _port = int.Parse(portField.Text);
-                _addr = ipField.Text;
+                CurrentUser.port = int.Parse(portField.Text);
+                CurrentUser.address = ipField.Text;
+
+                ipField.ReadOnly = true;
+                portField.ReadOnly = true;
 
                 connectButton.Enabled = false;
                 disconnectButton.Enabled = true;
@@ -170,11 +136,14 @@ namespace Sea_Battle
 
         private void disconnectButton_Click(object sender, EventArgs e)
         {
-            _port = 0;
-            _addr = string.Empty;
+            CurrentUser.port = null;
+            CurrentUser.address = null;
 
             ipField.Clear();
             portField.Clear();
+
+            ipField.ReadOnly = false;
+            portField.ReadOnly = false;
 
             connectButton.Enabled = true;
             disconnectButton.Enabled = false;

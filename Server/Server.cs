@@ -9,14 +9,31 @@ using Models;
 
 namespace Server
 {
+    //------ПЕРЕД ТЕСТАМИ - НАСТРОИТЬ appsettings.json ПОД СЕБЯ------\\
     public class Server
     {
         private static bool _isServerStarted = false;
         static async Task Main(string[] args)
         {
             Console.Title = "Sea Battle Server";
-            int port = 9001;
-            IPAddress ipAddress = IPAddress.Parse("127.0.0.1"); ;
+
+            string[] connectionAddress = null!;
+            int port = 0;
+            IPAddress ipAddress = null!;
+
+            try
+            {
+                connectionAddress = File.ReadAllText("../../../connectionAddress.ini").Split(':');
+                port = int.Parse(connectionAddress[1]);
+                ipAddress = IPAddress.Parse(connectionAddress[0]);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to read connection address from connectionAddress.ini\n" +
+                    $"Make sure that this file exist and it contains valid IP and port in 'ip:port' format.\nDeatils: " + ex.Message);
+                return;
+            }
+
             IPEndPoint ep;
             TcpListener listener = null!;
             BinaryFormatter bf = new();
@@ -68,7 +85,7 @@ namespace Server
                                 }
 
                                 await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
-                                    $"SIGN IN request. Login: {user.Login} | Status: {status} \n");
+                                    $"{request.Header} request. Login: {user.Login} | Status: {status} \n");
                                 break;
                             case "REGISTER":
                                 user = request.User;
@@ -95,10 +112,33 @@ namespace Server
                                 }
 
                                 await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
-                                    $"REGISTER request. Login: {user.Login} | Status: {status} \n");
+                                    $"{request.Header} request. Login: {user.Login} | Status: {status} \n");
                                 break;
                             case "GAME LIST":
-                                throw new NotImplementedException();
+                                var res = db.GetGameList();
+                                status = "FAILURE";
+                                if(res is not null)
+                                {
+                                    var glResponse = new Response()
+                                    {
+                                        Games = res
+                                    };
+                                    bf.Serialize(ns, glResponse);
+                                    status = "SUCCESS";
+                                }
+                                else
+                                {
+                                    var glResponse = new Response()
+                                    {
+                                        ErrorMessage = "An error occured during getting games list from database.\nCheck server console for details."
+                                    };
+                                    bf.Serialize(ns, glResponse);
+                                }
+
+                                //await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
+                                //    $"{request.Header} request. | Status: {status} \n");
+                                //при нормальной работе оно, как и refersh, enemywait и shoot будет сильно засирать консоль
+                                //позже можно добавить в меню сервера опцию по типу "расширенные логи"
                                 break;
                             case "JOIN":
                                 throw new NotImplementedException();
@@ -124,6 +164,13 @@ namespace Server
                             case "REMATCH":
                                 throw new NotImplementedException();
                                 break;
+                            default:
+                                var defaultResponse = new Response()
+                                {
+                                    ErrorMessage = "Incorrect request header"
+                                };
+                                bf.Serialize(ns, defaultResponse);
+                                break;
                         }
 
                         acceptor.Close();
@@ -142,17 +189,16 @@ namespace Server
                     string? choice;
                     do
                     {
-                        Console.Write("Enter 'START' to start server. " +
-                        "Without configuration it will use default IP and port (127.0.0.1:9001)." +
-                        "\nEnter 'EDIT' to set custom IP and port." +
+                        Console.Write("Enter 'START' to start server." +
+                        $"\nEnter 'EDIT' to edit address file. Current address is {ipAddress}:{port}" +
                         "\nEnter 'VIEWDB' to view first 5 rows of every table in database." +
                         "\nEnter 'EXIT' to close the application.\n>");
                         choice = await Console.In.ReadLineAsync();
                     }
-                    while (choice.ToLower() != "start" && choice.ToLower() != "edit" && 
-                    choice.ToLower() != "viewdb" && choice.ToLower() != "exit");
+                    while (choice.ToLower().Trim() != "start" && choice.ToLower().Trim() != "edit" && 
+                    choice.ToLower().Trim() != "viewdb" && choice.ToLower().Trim() != "exit");
                     
-                    switch(choice.ToLower())
+                    switch(choice.ToLower().Trim())
                     {
                         case "start":
                             try
@@ -173,10 +219,12 @@ namespace Server
                         case "edit":
                             try
                             {
-                                Console.Write("\nEnter IP address> ");
-                                ipAddress = IPAddress.Parse(Console.ReadLine() ?? "");
-                                Console.Write("\nEnter port> ");
-                                port = int.Parse(Console.ReadLine() ?? "");
+                                await Console.Out.WriteAsync("\nEnter IP address> ");
+                                ipAddress = IPAddress.Parse(await Console.In.ReadLineAsync() ?? "");
+                                await Console.Out.WriteAsync("\nEnter port> ");
+                                port = int.Parse(await Console.In.ReadLineAsync() ?? "");
+
+                                File.WriteAllText("../../../connectionAddress.ini", $"{ipAddress}:{port}");
                             }
                             catch (Exception ex)
                             {

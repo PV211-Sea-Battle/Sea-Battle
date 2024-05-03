@@ -234,7 +234,6 @@
             Name = "AuthPage";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Authorization";
-            FormClosing += AuthPage_FormClosing;
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();

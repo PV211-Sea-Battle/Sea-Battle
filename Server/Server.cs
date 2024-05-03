@@ -30,7 +30,7 @@ namespace Server
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to read connection address from connectionAddress.ini\n" +
-                    $"Make sure that this file exist and it contains valid IP and port in 'ip:port' format.\nDeatils: " + ex.Message);
+                    $"Make sure that this file exist and it contains valid IP and port in 'ip:port' format.\nDetails: " + ex.Message);
                 return;
             }
 
@@ -140,7 +140,60 @@ namespace Server
                                 //позже можно добавить в меню сервера опцию по типу "расширенные логи"
                                 break;
                             case "JOIN":
-                                throw new NotImplementedException();
+                                Game game = await DbServer.GetGame(request.Game.Id);
+                                user = request.User;
+                                string? gamePassword = request.EnteredGamePassword;
+                                status = "FAILURE";
+
+                                if (game.ClientUserId == -1)
+                                {
+                                    if (game.IsPrivate)
+                                    {
+                                        if (gamePassword == game.Password)
+                                        {
+                                            game = db.JoinGame(game.Id, user.Id);
+                                            if (game is not null)
+                                                status = "SUCCESS";
+                                        }
+                                        else status = "FAILURE-INCORR_PASS";
+                                    }
+                                    else
+                                    {
+                                        game = db.JoinGame(game.Id, user.Id);
+                                        if (game is not null)
+                                            status = "SUCCESS";
+                                    }
+                                }
+                                else status = "FAILURE-GAME_FULL";
+
+                                if(status == "SUCCESS")
+                                {
+                                    var joinResponse = new Response()
+                                    {
+                                        Game = game
+                                    };
+                                    bf.Serialize(ns, joinResponse);
+                                }
+                                else
+                                {
+                                    var joinResponse = new Response();
+                                    switch (status)
+                                    {
+                                        case "FAILURE-INCORR_PASS":
+                                            joinResponse.ErrorMessage = "Failed to join the game:\nIncorrect password.";
+                                            break;
+                                        case "FAILURE-GAME_FULL":
+                                            joinResponse.ErrorMessage = "Failed to join the game:\nGame is full.";
+                                            break;
+                                        default:
+                                            joinResponse.ErrorMessage = "Failed to join the game:\nGame or user does not exist.";
+                                            break;
+                                    }
+                                    bf.Serialize(ns, joinResponse);
+                                }
+
+                                await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
+                                    $"{request.Header} request. Login: {user.Login}. Room Name: {game.Name} | Status: {status} \n");
                                 break;
                             case "CREATE":
                                 throw new NotImplementedException();
@@ -157,7 +210,7 @@ namespace Server
                             case "SHOOT":
                                 throw new NotImplementedException();
                                 break;
-                            case "FORFEIT":
+                            case "FORFREIT":
                                 throw new NotImplementedException();
                                 break;
                             case "REMATCH":

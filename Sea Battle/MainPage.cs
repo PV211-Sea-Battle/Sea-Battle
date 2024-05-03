@@ -53,8 +53,8 @@ namespace Sea_Battle
                     string[] row =
                     [
                         game.Name,
-                    game.IsPrivate ? "+" : string.Empty,
-                    game.User.Login
+                        game.IsPrivate ? "+" : string.Empty,
+                        game.User.Login
                     ];
 
                     serverList.Items.Add(new ListViewItem(row));
@@ -76,17 +76,32 @@ namespace Sea_Battle
             //окно создания игры
         }
 
-        private void joinGameButton_Click(object sender, EventArgs e)
+        private async void joinGameButton_Click(object sender, EventArgs e)
         {
-            Game selectedGame = games[serverList.SelectedIndices[0]];
+            try
+            {
+                CurrentUser.game = games[serverList.SelectedIndices[0]];
 
-            if (selectedGame.IsPrivate)
-            {
-                //окно подключения к игре с паролем
+                if (CurrentUser.game.IsPrivate)
+                {
+                    CurrentUser.form = new GameLobbyPage();
+                    Close();
+                }
+                else
+                {
+                    Request request = new()
+                    {
+                        Header = "JOIN",
+                        User = CurrentUser.user,
+                        Game = CurrentUser.game
+                    };
+
+                    await CurrentUser.SendMessageAsync(request);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                //окно подготовки к игре
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -97,7 +112,7 @@ namespace Sea_Battle
 
         private void MainPage_Load(object sender, EventArgs e)
         {
-            System.Windows.Forms.Timer timer = new();
+            System.Windows.Forms.Timer timer = new(components);
             timer.Interval = 1000;
             timer.Tick += new EventHandler(timer_Tick);
             timer.Start();
@@ -114,11 +129,6 @@ namespace Sea_Battle
             {
                 joinGameButton.Enabled = false;
             }
-        }
-
-        private void MainPage_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            Application.Exit();
         }
     }
 }

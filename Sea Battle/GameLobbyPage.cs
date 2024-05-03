@@ -1,69 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using Models;
 
 namespace Sea_Battle
 {
     public partial class GameLobbyPage : Form
     {
-        bool field = false;
         public GameLobbyPage()
         {
             InitializeComponent();
-            passwordField.UseSystemPasswordChar = false;
-        }
 
-        private void groupBox1_Enter(object sender, EventArgs e)
-        {
+            connectButton.EnabledChanged += CurrentUser.ButtonEnabledChanged;
 
-        }
-
-        private void passwordField_TextChanged(object sender, EventArgs e)
-        {
-
+            gameNameField.Text = CurrentUser.game.Name;
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox1.Checked)
-            {
-                passwordField.UseSystemPasswordChar = false;
-            }
-            else
-                passwordField.UseSystemPasswordChar = true;
+            passwordField.UseSystemPasswordChar = !checkBox1.Checked;
         }
 
-        private void connectButton_Click(object sender, EventArgs e)
+        private async void connectButton_Click(object sender, EventArgs e)
         {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(passwordField.Text))
+                {
+                    MessageBox.Show("Enter the password", "Caption!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
+                Request request = new()
+                {
+                    Header = "JOIN",
+                    User = CurrentUser.user,
+                    Game = CurrentUser.game,
+                    EnteredGamePassword = passwordField.Text
+                };
+
+                await CurrentUser.SendMessageAsync(request);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
-            this.Close();
-        }
-
-        private void passwordField_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (!field)
-            {
-                passwordField.Clear();
-                field = true;
-
-            }
-            if (checkBox1.Checked)
-            {
-                passwordField.UseSystemPasswordChar = false;
-            }
-            else
-                passwordField.UseSystemPasswordChar = true;
-
+            CurrentUser.form = new MainPage();
+            Close();
         }
     }
 }

@@ -156,7 +156,6 @@
             Name = "MainPage";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Main page";
-            FormClosing += MainPage_FormClosing;
             Load += MainPage_Load;
             groupBox1.ResumeLayout(false);
             groupBox2.ResumeLayout(false);

@@ -2,17 +2,18 @@ namespace Sea_Battle
 {
     internal static class Program
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new AuthPage());
-            //Application.Run(new GameLobbyPage());
+            
+            while (CurrentUser.form is not null)
+            {
+                Form form = CurrentUser.form;
+                CurrentUser.form = null;
+
+                Application.Run(form);
+            }
         }
     }
 }

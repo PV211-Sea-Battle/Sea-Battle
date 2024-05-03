@@ -8,9 +8,14 @@ namespace Sea_Battle
 {
     static class CurrentUser
     {
-        public static User? user;
+        public static Form? form = new AuthPage();
+
         public static string? address;
         public static int? port;
+
+        public static User? user;
+        public static Game? game;
+
         public static async Task<Response> SendMessageAsync(Request request, bool waitForResponse = true)
         {
             try
@@ -62,8 +67,8 @@ namespace Sea_Battle
         private static async void Test()
         {
             // Создаем обработчик ошибок
-            // Так как метод SendMessageAsync вызывает throw если с сервера была отправлена ошибка. Line 38
-            // В throw передается свойство ErrorMessage класса Response. Line 40
+            // Так как метод SendMessageAsync вызывает throw если с сервера была отправлена ошибка
+            // В throw передается свойство ErrorMessage класса Response
             try
             {
                 // Создаем запрос на сервер
@@ -73,7 +78,7 @@ namespace Sea_Battle
                     Header = "TEST",
 
                     // Пользователь который обратился к серверу.
-                    // После входа в аккаунт он сохранен в переменной user класса CurrentUser. Line 11
+                    // После входа в аккаунт он сохранен в переменной user класса CurrentUser
                     User = CurrentUser.user,
 
                     // Добавляйте нужные параметры в класс Request в зависимости от запроса
@@ -81,13 +86,13 @@ namespace Sea_Battle
                 };
 
                 // Отправка запроса на сервер через метод SendMessageAsync
-                // Адресс и порт сервера сохранены в переменных address и port класса CurrentUser. Line 12, 13
-                // SendMessageAsync возвращает ответ от сервера Response. Line 36
+                // Адресс и порт сервера сохранены в переменных address и port класса CurrentUser
+                // SendMessageAsync возвращает ответ от сервера Response
                 // Если вам надо использовать ответ сервера, то сохраняйте ответ в переменную
                 Response response = await CurrentUser.SendMessageAsync(request);
 
                 // Делать проверку на ошибку с сервера в свойстве ErrorMessage не нужно
-                // Так как при наличии ошибки будет вызван throw, который перехватит наш catch. Line 87
+                // Так как при наличии ошибки будет вызван throw, который перехватит наш catch
 
                 // Если код дошел дальше вызова метода SendMessageAsync, значит ошибки у сервера не было
                 // Это означает что все прошло ОК, и можно делать нужные действия

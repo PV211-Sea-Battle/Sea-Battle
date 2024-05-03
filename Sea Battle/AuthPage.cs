@@ -59,9 +59,8 @@ namespace Sea_Battle
                     Response response = await CurrentUser.SendMessageAsync(request);
 
                     CurrentUser.user = response.User;
-                    MainPage mainPage = new();
-                    mainPage.Show();
-                    Hide();
+                    CurrentUser.form = new MainPage();
+                    Close();
                 }
             }
             catch (Exception ex)
@@ -103,7 +102,9 @@ namespace Sea_Battle
 
                     Response response = await CurrentUser.SendMessageAsync(request);
 
-                    MessageBox.Show("You created new account!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    CurrentUser.user = response.User;
+                    CurrentUser.form = new MainPage();
+                    Close();
                 }
             }
             catch (Exception ex)
@@ -111,11 +112,6 @@ namespace Sea_Battle
                 MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 ClearBoxes();
             }
-        }
-
-        private void AuthPage_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            Application.Exit();
         }
 
         private void connectButton_Click(object sender, EventArgs e)

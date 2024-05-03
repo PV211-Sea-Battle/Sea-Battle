@@ -8,7 +8,7 @@
         public string Password { get; set; } = null!;
         public bool IsInGame { get; set; }
 
-        public List<Field> Fields { get; set; }
-        public List<Game> Games { get; set; }
+        public virtual List<Field> Fields { get; set; }
+        public virtual List<Game> Games { get; set; }
     }
 }

@@ -1,11 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server
 {
@@ -89,13 +83,7 @@ namespace Server
             {
                 if (user.Login == login && user.Password == pass)
                 {
-                    res = new()
-                    {
-                        Id = user.Id,
-                        Login = login,
-                        Password = pass,
-                        IsInGame = user.IsInGame
-                    };
+                    res = user;
                 }
             }
             return res;
@@ -105,8 +93,20 @@ namespace Server
         {
             try { _db = new ServerDbContext(); }
             catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
-            var games = _db.Game.ToList();
+            var games = _db.Game
+                .Include(item => item.User)
+                .Where(item => item.ClientUserId == -1).ToList();
             return games;
+        }
+
+        public Game GetGame(int gameId)
+        {
+            try { _db = new ServerDbContext(); }
+            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
+            Game? game = (from g in _db.Game
+                          where g.Id == gameId
+                          select g).ToList().FirstOrDefault();
+            return game??null!;
         }
 
         public Game JoinGame(int gameId, int userId)
@@ -123,8 +123,40 @@ namespace Server
                 return null!;
             game.ClientUserId = user.Id;
             _db.SaveChanges();
-            game.User = null!;
             return game;
+        }
+
+        public Game CreateGame(Game game, int userId)
+        {
+            try { _db = new ServerDbContext(); }
+            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
+            bool check = true;
+            var games = _db.Game.ToList();
+
+            foreach (var g in games)
+                if (g.Name == game.Name)
+                    check = false;
+            var user = (from u in _db.User
+                        where u.Id == userId
+                        select u).ToList().FirstOrDefault();
+
+            if (check && user is not null)
+            {
+                _db.Game.Add(new Game()
+                {
+                    Name = game.Name,
+                    IsPrivate = game.IsPrivate,
+                    Password = game.Password,
+                    Winner = null,
+                    HostUserId = userId,
+                    ClientUserId = -1
+                });
+                _db.SaveChanges();
+                return (from g in _db.Game
+                       where g.Name.Equals(game.Name)
+                       select g).ToList().FirstOrDefault()??null!;
+            }
+            return null!;
         }
     }
 }

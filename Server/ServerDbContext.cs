@@ -1,11 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 
 namespace Server
@@ -41,6 +36,7 @@ namespace Server
             builder.Entity<Field>().HasMany(f => f.Cells);
 
             builder.Entity<User>().HasIndex(u => u.Login).IsUnique();
+            builder.Entity<Game>().HasIndex(u => u.Name).IsUnique();
         }
     }
 }

@@ -45,12 +45,13 @@ namespace Sea_Battle
                     {
                         Name = nameField.Text,
                         IsPrivate = checkBox1.Checked,
-                        Password = passwordField.Text,
-                        HostUserId = CurrentUser.user.Id //в этом не уверен
+                        Password = passwordField.Text
                     },
                 };
 
-                await CurrentUser.SendMessageAsync(request);
+                Response response = await CurrentUser.SendMessageAsync(request);
+
+                CurrentUser.game = response.Game;
             }
             catch (Exception ex)
             {

@@ -16,7 +16,7 @@ namespace Server
             foreach (var user in users)
             {
                 Console.WriteLine($"Id: {user.Id} | Login: {user.Login} | " +
-                    $"Password: {user.Password} | Is in game?: {user.IsInGame}"); // конфиденциальность 80 лвла
+                    $"Password: {user.Password}"); // конфиденциальность 80 лвла
             }
 
             var games = _db.Game.OrderByDescending(g => g.Id).ToList().Take(5);
@@ -61,8 +61,7 @@ namespace Server
                     _db.User.Add(new()
                     {
                         Login = login,
-                        Password = pass,
-                        IsInGame = false
+                        Password = pass
                     });
                     _db.SaveChanges();
                 }
@@ -83,7 +82,6 @@ namespace Server
             {
                 if (user.Login == login && user.Password == pass)
                 {
-                    // Вернуть надо юзера с базы данных, чтобы в будущем использовать Include
                     res = user;
                 }
             }
@@ -94,32 +92,22 @@ namespace Server
         {
             try { _db = new ServerDbContext(); }
             catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
-            // Надо подогнать хоста, чтобы в клиенте видеть его логин
-            // Защиту пароля сделаю в следующем комите
             var games = _db.Game
                 .Include(item => item.User)
                 .Where(item => item.ClientUserId == -1).ToList();
             return games;
         }
 
-        public static async Task<Game> GetGame(int gameId)
+        public Game GetGame(int gameId)
         {
-            try
-            {
-                await using ServerDbContext context = new();
-
-                if (context.Game.Any(item => item.Id == gameId))
-                {
-                    return context.Game.First(item => item.Id == gameId);
-                }
-                
-                throw new("Game is invalid");
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            try { _db = new ServerDbContext(); }
+            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
+            Game? game = (from g in _db.Game
+                          where g.Id == gameId
+                          select g).ToList().FirstOrDefault();
+            return game??null!;
         }
+
         public Game JoinGame(int gameId, int userId)
         {
             try { _db = new ServerDbContext(); }
@@ -135,6 +123,39 @@ namespace Server
             game.ClientUserId = user.Id;
             _db.SaveChanges();
             return game;
+        }
+
+        public Game CreateGame(Game game, int userId)
+        {
+            try { _db = new ServerDbContext(); }
+            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
+            bool check = true;
+            var games = _db.Game.Where(item => item.ClientUserId == -1).ToList();
+
+            foreach (var g in games)
+                if (g.Name == game.Name)
+                    check = false;
+            var user = (from u in _db.User
+                        where u.Id == userId
+                        select u).ToList().FirstOrDefault();
+
+            if (check && user is not null)
+            {
+                _db.Game.Add(new Game()
+                {
+                    Name = game.Name,
+                    IsPrivate = game.IsPrivate,
+                    Password = game.Password,
+                    Winner = null,
+                    HostUserId = userId,
+                    ClientUserId = -1
+                });
+                _db.SaveChanges();
+                return (from g in _db.Game
+                       where g.Name.Equals(game.Name) && g.ClientUserId == -1
+                       select g).ToList().FirstOrDefault()??null!;
+            }
+            return null!;
         }
     }
 }

@@ -5,7 +5,8 @@ using Models;
 
 #pragma warning disable SYSLIB0011
 #pragma warning disable CS8600
-#pragma warning disable CS8602 //мозолят глаза там, где null'ов быть не может
+#pragma warning disable CS8602
+#pragma warning disable CS8604 //мозолят глаза там, где null'ов быть не может
 
 namespace Server
 {
@@ -13,24 +14,26 @@ namespace Server
     public class Server
     {
         private static bool _isServerStarted = false;
+        private static bool _isExtendedLogsEnabled = false;
         static async Task Main(string[] args)
         {
             Console.Title = "Sea Battle Server";
 
-            string[] connectionAddress = null!;
+            string[] serverConfig = null!;
             int port = 0;
             IPAddress ipAddress = null!;
 
             try
             {
-                connectionAddress = File.ReadAllText("../../../connectionAddress.ini").Split(':');
-                port = int.Parse(connectionAddress[1]);
-                ipAddress = IPAddress.Parse(connectionAddress[0]);
+                serverConfig = File.ReadAllText("../../../serverConfig.ini").Split(':');
+                _isExtendedLogsEnabled = Convert.ToBoolean(serverConfig[2]);
+                port = int.Parse(serverConfig[1]);
+                ipAddress = IPAddress.Parse(serverConfig[0]);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to read connection address from connectionAddress.ini\n" +
-                    $"Make sure that this file exist and it contains valid IP and port in 'ip:port' format.\nDetails: " + ex.Message);
+                Console.WriteLine($"Failed to read configuration from serverConfig.ini\n" +
+                    $"Make sure that this file exist and it contains valid IP, port and extnd logs status in 'ip:port:status' format.\nDetails: " + ex.Message);
                 return;
             }
 
@@ -84,7 +87,7 @@ namespace Server
                                 }
 
                                 await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
-                                    $"{request.Header} request. Login: {user.Login} | Status: {status} \n");
+                                    $"{request.Header} request. Login: {request.User.Login} | Status: {status} \n");
                                 break;
                             case "REGISTER":
                                 user = request.User;
@@ -111,7 +114,7 @@ namespace Server
                                 }
 
                                 await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
-                                    $"{request.Header} request. Login: {user.Login} | Status: {status} \n");
+                                    $"{request.Header} request. Login: {request.User.Login} | Status: {status} \n");
                                 break;
                             case "GAME LIST":
                                 var res = db.GetGameList();
@@ -134,37 +137,40 @@ namespace Server
                                     bf.Serialize(ns, glResponse);
                                 }
 
-                                //await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
-                                //    $"{request.Header} request. | Status: {status} \n");
-                                //при нормальной работе оно, как и refersh, enemywait и shoot будет сильно засирать консоль
-                                //позже можно добавить в меню сервера опцию по типу "расширенные логи"
+                                if (_isExtendedLogsEnabled)
+                                    await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
+                                        $"{request.Header} request. | Status: {status} \n");
                                 break;
                             case "JOIN":
-                                Game game = await DbServer.GetGame(request.Game.Id);
+                                Game game = db.GetGame(request.Game.Id);
                                 user = request.User;
                                 string? gamePassword = request.EnteredGamePassword;
                                 status = "FAILURE";
 
-                                if (game.ClientUserId == -1)
+                                if(game is not null)
                                 {
-                                    if (game.IsPrivate)
+                                    if (game.ClientUserId == -1)
                                     {
-                                        if (gamePassword == game.Password)
+                                        if (game.IsPrivate)
+                                        {
+                                            if (gamePassword == game.Password)
+                                            {
+                                                game = db.JoinGame(game.Id, user.Id);
+                                                if (game is not null)
+                                                    status = "SUCCESS";
+                                            }
+                                            else status = "FAILURE-INCORR_PASS";
+                                        }
+                                        else
                                         {
                                             game = db.JoinGame(game.Id, user.Id);
                                             if (game is not null)
                                                 status = "SUCCESS";
                                         }
-                                        else status = "FAILURE-INCORR_PASS";
                                     }
-                                    else
-                                    {
-                                        game = db.JoinGame(game.Id, user.Id);
-                                        if (game is not null)
-                                            status = "SUCCESS";
-                                    }
+                                    else status = "FAILURE-GAME_FULL";
                                 }
-                                else status = "FAILURE-GAME_FULL";
+                                
 
                                 if(status == "SUCCESS")
                                 {
@@ -193,10 +199,32 @@ namespace Server
                                 }
 
                                 await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
-                                    $"{request.Header} request. Login: {user.Login}. Room Name: {game.Name} | Status: {status} \n");
+                                    $"{request.Header} request. Login: {request.User.Login}. Room Name: {request.Game.Name} | Status: {status} \n");
                                 break;
                             case "CREATE":
-                                throw new NotImplementedException();
+                                game = db.CreateGame(request.Game, request.User.Id);
+                                status = "FAILURE";
+
+                                if(game is not null)
+                                {
+                                    var crResponce = new Response()
+                                    {
+                                        Game = game
+                                    };
+                                    bf.Serialize(ns, crResponce);
+                                    status = "SUCCESS";
+                                }
+                                else
+                                {
+                                    var crResponce = new Response()
+                                    {
+                                        ErrorMessage = "Failed to join the game:\nName was already taken or user does not exist"
+                                    };
+                                    bf.Serialize(ns, crResponce);
+                                }
+
+                                await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
+                                    $"{request.Header} request. Login: {request.User.Login}. Room Name: {request.Game.Name} | Status: {status} \n");
                                 break;
                             case "READY":
                                 throw new NotImplementedException();
@@ -241,14 +269,19 @@ namespace Server
                     string? choice;
                     do
                     {
-                        Console.Write("Enter 'START' to start server." +
-                        $"\nEnter 'EDIT' to edit address file. Current address is {ipAddress}:{port}" +
-                        "\nEnter 'VIEWDB' to view first 5 rows of every table in database." +
-                        "\nEnter 'EXIT' to close the application.\n>");
+                        Console.Write("Avaivable commands:" +
+                        "\n'START' - Start the server." +
+                        $"\n'EDIT' - Edit address file. Current address is {ipAddress}:{port}" +
+                        "\n'VIEWDB' - View first 5 rows of every table in database." +
+                        "\n'LOGS' - Switch the extended server logs. Current status: ");
+                        if (_isExtendedLogsEnabled) Console.Write("ON"); else Console.Write("OFF");
+
+                        Console.Write("\n'EXIT' - Close the application.\n>");
                         choice = await Console.In.ReadLineAsync();
                     }
                     while (choice.ToLower().Trim() != "start" && choice.ToLower().Trim() != "edit" && 
-                    choice.ToLower().Trim() != "viewdb" && choice.ToLower().Trim() != "exit");
+                    choice.ToLower().Trim() != "viewdb" && choice.ToLower().Trim() != "logs" &&
+                    choice.ToLower().Trim() != "exit");
                     
                     switch(choice.ToLower().Trim())
                     {
@@ -276,7 +309,7 @@ namespace Server
                                 await Console.Out.WriteAsync("\nEnter port> ");
                                 port = int.Parse(await Console.In.ReadLineAsync() ?? "");
 
-                                File.WriteAllText("../../../connectionAddress.ini", $"{ipAddress}:{port}");
+                                File.WriteAllText("../../../serverConfig.ini", $"{ipAddress}:{port}:{_isExtendedLogsEnabled}");
                             }
                             catch (Exception ex)
                             {
@@ -286,6 +319,14 @@ namespace Server
                             break;
                         case "viewdb":
                             db.ShowFirst5RowsOfEveryTable();
+                            break;
+                        case "logs":
+                            if (_isExtendedLogsEnabled)
+                                _isExtendedLogsEnabled = false;
+                            else
+                                _isExtendedLogsEnabled = true;
+
+                            File.WriteAllText("../../../serverConfig.ini", $"{ipAddress}:{port}:{_isExtendedLogsEnabled}");
                             break;
                         case "exit":
                             return;

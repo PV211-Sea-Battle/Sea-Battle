@@ -73,7 +73,8 @@ namespace Sea_Battle
 
         private void createGameButton_Click(object sender, EventArgs e)
         {
-            //окно создания игры
+            CurrentUser.form = new CreatePage();
+            Close();
         }
 
         private async void joinGameButton_Click(object sender, EventArgs e)
@@ -84,7 +85,7 @@ namespace Sea_Battle
 
                 if (CurrentUser.game.IsPrivate)
                 {
-                    CurrentUser.form = new GameLobbyPage();
+                    CurrentUser.form = new ConnectPage();
                     Close();
                 }
                 else

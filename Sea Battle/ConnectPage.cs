@@ -2,9 +2,9 @@
 
 namespace Sea_Battle
 {
-    public partial class GameLobbyPage : Form
+    public partial class ConnectPage : Form
     {
-        public GameLobbyPage()
+        public ConnectPage()
         {
             InitializeComponent();
 

@@ -1,6 +1,6 @@
 ﻿namespace Sea_Battle
 {
-    partial class GameLobbyPage
+    partial class ConnectPage
     {
         /// <summary>
         /// Required designer variable.
@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConnectPage));
             groupBox1 = new GroupBox();
             gameNameField = new TextBox();
             label1 = new Label();
@@ -75,9 +76,9 @@
             label1.AutoSize = true;
             label1.Location = new Point(46, 64);
             label1.Name = "label1";
-            label1.Size = new Size(91, 19);
+            label1.Size = new Size(129, 19);
             label1.TabIndex = 9;
-            label1.Text = "Game/Lobby:";
+            label1.Text = "Game/Lobby name:";
             // 
             // checkBox1
             // 
@@ -137,7 +138,7 @@
             connectButton.UseVisualStyleBackColor = false;
             connectButton.Click += connectButton_Click;
             // 
-            // GameLobbyPage
+            // ConnectPage
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -147,9 +148,11 @@
             Font = new Font("Segoe UI", 10F);
             ForeColor = Color.White;
             FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(3, 2, 3, 2);
-            Name = "GameLobbyPage";
-            Text = "GameLobbyPage";
+            Name = "ConnectPage";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Connect to game";
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ResumeLayout(false);

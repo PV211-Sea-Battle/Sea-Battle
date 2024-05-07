@@ -12,13 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решен
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sea Battle", "Sea Battle\Sea Battle.csproj", "{4D557C68-92B3-4A5C-88A5-49714052FACD}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{7A72935C-77EA-4629-A029-85CB0368898E}"
-	ProjectSection(SolutionItems) = preProject
-		AuthPic.jpg = AuthPic.jpg
-		icon.ico = icon.ico
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sea Battle", "Sea Battle\Sea Battle.csproj", "{73F75F72-470E-4C5C-9340-731E1A3D0911}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,10 +28,10 @@ Global
 		{9A13ED6D-4266-4785-BE85-1662A17B30C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A13ED6D-4266-4785-BE85-1662A17B30C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A13ED6D-4266-4785-BE85-1662A17B30C6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4D557C68-92B3-4A5C-88A5-49714052FACD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4D557C68-92B3-4A5C-88A5-49714052FACD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4D557C68-92B3-4A5C-88A5-49714052FACD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4D557C68-92B3-4A5C-88A5-49714052FACD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73F75F72-470E-4C5C-9340-731E1A3D0911}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73F75F72-470E-4C5C-9340-731E1A3D0911}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73F75F72-470E-4C5C-9340-731E1A3D0911}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73F75F72-470E-4C5C-9340-731E1A3D0911}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -138,7 +138,7 @@ namespace Server
                                 }
 
                                 if (_isExtendedLogsEnabled)
-                                    await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
+                                    await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}][EXT-LOG] " +
                                         $"{request.Header} request. | Status: {status} \n");
                                 break;
                             case "JOIN":
@@ -227,7 +227,18 @@ namespace Server
                                     $"{request.Header} request. Login: {request.User.Login}. Room Name: {request.Game.Name} | Status: {status} \n");
                                 break;
                             case "READY":
-                                throw new NotImplementedException();
+                                status = db.Ready(request.Field);
+                                var rdResponce = new Response();
+                                if(status != "SUCCESS")
+                                {
+                                    rdResponce.ErrorMessage = status;
+                                    status = "FAILURE";
+                                }
+                                bf.Serialize(ns, rdResponce);
+
+                                if (_isExtendedLogsEnabled)
+                                    await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}][EXT-LOG] " +
+                                        $"{request.Header} request. | UserId: {request.Field.UserId} | Status: {status} \n");
                                 break;
                             case "ENEMY WAIT":
                                 throw new NotImplementedException();
@@ -265,7 +276,6 @@ namespace Server
                 }
                 else
                 {
-                    Task.Delay(100).Wait();
                     string? choice;
                     do
                     {

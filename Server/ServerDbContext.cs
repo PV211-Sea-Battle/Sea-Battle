@@ -11,6 +11,7 @@ namespace Server
         public DbSet<Field> Field { get; set; }
         public DbSet<Cell> Cell { get; set; }
         public DbSet<Game> Game { get; set; }
+        public DbSet<CompletedGame> CompletedGames { get; set; }
 
         public ServerDbContext() : base(GenerateOptions())
         {
@@ -36,7 +37,8 @@ namespace Server
             builder.Entity<Field>().HasMany(f => f.Cells);
 
             builder.Entity<User>().HasIndex(u => u.Login).IsUnique();
-            builder.Entity<Game>().HasIndex(u => u.Name).IsUnique();
+
+            builder.Entity<CompletedGame>().HasNoKey();
         }
     }
 }

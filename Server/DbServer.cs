@@ -16,7 +16,7 @@ namespace Server
             foreach (var user in users)
             {
                 Console.WriteLine($"Id: {user.Id} | Login: {user.Login} | " +
-                    $"Password: {user.Password} | Is in game?: {user.IsInGame}"); // конфиденциальность 80 лвла
+                    $"Password: {user.Password} | Victories: {user.Victories} | Defeats: {user.Defeats}"); // конфиденциальность 80 лвла
             }
 
             var games = _db.Game.OrderByDescending(g => g.Id).ToList().Take(5);
@@ -41,6 +41,14 @@ namespace Server
                 Console.WriteLine($"Id: {cell.Id} | FieldId: {cell.FieldId} | " +
                     $"IsContainsShip?: {cell.IsContainsShip} | IsHit?: {cell.IsHit}");
             }
+
+            var cgames = _db.CompletedGames.OrderByDescending(cg => cg.Id).ToList().Take(5);
+            Console.WriteLine("\nCompleted Games:\n");
+            foreach (var game in cgames)
+            {
+                Console.WriteLine($"Id: {game.Id} | Name: {game.Name} | IsPrivate?: {game.IsPrivate}" +
+                    $"Password: {game.Password} | Winner: {game.Winner} | HostUserId: {game.HostUserId} | ClientUserId: {game.ClientUserId}");
+            }
         }
 
         public bool RegisterUser(string login, string pass)
@@ -61,12 +69,11 @@ namespace Server
                     _db.User.Add(new()
                     {
                         Login = login,
-                        Password = pass,
-                        IsInGame = false
+                        Password = pass
                     });
                     _db.SaveChanges();
                 }
-                catch (Exception ex) { Console.WriteLine(ex.Message); return false; }
+                catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message); return false; }
                 return true;
             }
             return false;
@@ -131,7 +138,7 @@ namespace Server
             try { _db = new ServerDbContext(); }
             catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
             bool check = true;
-            var games = _db.Game.ToList();
+            var games = _db.Game.Where(item => item.ClientUserId == -1).ToList();
 
             foreach (var g in games)
                 if (g.Name == game.Name)
@@ -153,10 +160,51 @@ namespace Server
                 });
                 _db.SaveChanges();
                 return (from g in _db.Game
-                       where g.Name.Equals(game.Name)
+                       where g.Name.Equals(game.Name) && g.ClientUserId == -1
                        select g).ToList().FirstOrDefault()??null!;
             }
             return null!;
+        }
+
+        public string Ready(Field field)
+        {
+            try { _db = new ServerDbContext(); }
+            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return ex.Message; }
+
+            var user = (from u in _db.User
+                        where u.Id == field.UserId
+                        select u).ToList().FirstOrDefault();
+            if (user is null)
+                return "Incorrect user ID";
+
+            try
+            {
+                bool check = true;
+                foreach(var f in _db.Field)
+                {
+                    if (f.UserId == field.UserId && f.IsActive)
+                        check = false;
+                }
+                if(check)
+                {
+                    field.IsActive = true;
+                    _db.Field.Add(field);
+                    _db.SaveChanges();
+                }
+
+                field.Id = (from f in _db.Field
+                            where f.UserId == field.UserId && f.IsActive
+                            select f.Id).ToList().FirstOrDefault();
+                foreach (var c in field.Cells)
+                {
+                    c.FieldId = field.Id;
+                    _db.Cell.Add(c);
+                }
+                _db.SaveChanges();
+            }
+            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message); return ex.Message; }
+
+            return "SUCCESS";
         }
     }
 }

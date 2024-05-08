@@ -39,4 +39,14 @@
             </Trigger>
         </Style.Triggers>
     </Style>
+    <Style x:Key="CheckBoxDarkStyle" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="Black"/>
+    </Style>
+    <Style x:Key="PasswordBoxDarkStyle" TargetType="PasswordBox">
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="Background" Value="Black"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    </Style>
 </ResourceDictionary>

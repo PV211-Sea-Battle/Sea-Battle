@@ -1,6 +1,7 @@
 ﻿using Models;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Windows;
 
 #pragma warning disable SYSLIB0011
 
@@ -49,6 +50,14 @@ namespace Sea_Battle
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+        public static void SwitchWindow<T>(Window currentWindow) where T : Window
+        {
+            if (Activator.CreateInstance(typeof(T)) is T window)
+            {
+                window.Show();
+                currentWindow.Close();
             }
         }
     }

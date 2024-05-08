@@ -7,7 +7,7 @@ using System.Windows.Input;
 namespace Sea_Battle.ViewModels
 {
     [AddINotifyPropertyChangedInterface]
-    class MainWindowViewModel
+    class AuthWindowViewModel
     {
         public string Login { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
@@ -15,7 +15,7 @@ namespace Sea_Battle.ViewModels
         public string Port { get; set; } = CurrentUser.port.ToString() ?? string.Empty;
         public ICommand EntryCommand { get; }
         public ICommand ConnectCommand { get; }
-        public MainWindowViewModel()
+        public AuthWindowViewModel()
         {
             EntryCommand = new RelayCommand<string>(Entry, CanEntry);
             ConnectCommand = new RelayCommand(Connect, CanConnect);

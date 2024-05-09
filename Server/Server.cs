@@ -241,7 +241,31 @@ namespace Server
                                         $"{request.Header} request. | UserId: {request.Field.UserId} | Status: {status} \n");
                                 break;
                             case "ENEMY WAIT":
-                                throw new NotImplementedException();
+                                user = db.EnemyWait(request.Game.Id, request.User.Id);
+                                status = "FAILURE";
+
+                                if(user is not null)
+                                {
+                                    var ewResponce = new Response()
+                                    {
+                                        User = user
+                                    };
+                                    bf.Serialize(ns, ewResponce);
+                                    status = "SUCCESS";
+                                }
+                                else
+                                {
+                                    var ewResponce = new Response()
+                                    {
+                                        ErrorMessage = "Error:\nInvalid user or game"
+                                    };
+                                    bf.Serialize(ns, ewResponce);
+                                }
+
+                                if (_isExtendedLogsEnabled)
+                                    await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}][EXT-LOG] " +
+                                        $"{request.Header} request. | GameId: {request.Game.Id} | " +
+                                        $"UserId: {request.User.Id} | Status: {status} \n");
                                 break;
                             case "REFRESH":
                                 throw new NotImplementedException();

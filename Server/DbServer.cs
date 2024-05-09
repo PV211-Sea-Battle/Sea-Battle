@@ -206,5 +206,28 @@ namespace Server
 
             return "SUCCESS";
         }
+
+        public User EnemyWait(int gameId, int userId)
+        {
+            try { _db = new ServerDbContext(); }
+            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
+            var user = (from u in _db.User
+                        where u.Id == userId
+                        select u).ToList().FirstOrDefault();
+            var game = (from g in _db.Game
+                          where g.Id == gameId
+                          select g).ToList().FirstOrDefault();
+            if (user is null || game is null)
+                return null!;
+
+            if(user.Id == game.HostUserId)
+                userId = game.ClientUserId;
+            else
+                userId = game.HostUserId;
+
+            return (from u in _db.User
+                    where u.Id == userId
+                    select u).ToList().FirstOrDefault()??null!;
+        }
     }
 }

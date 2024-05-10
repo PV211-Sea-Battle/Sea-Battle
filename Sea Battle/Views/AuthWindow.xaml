@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:Sea_Battle.ViewModels"
         xmlns:i="clr-namespace:Sea_Battle.Infrastructure"
         mc:Ignorable="d"
         Title="Authorization"
@@ -11,9 +10,6 @@
         Width="450"
         WindowStartupLocation="CenterScreen"
         Style="{StaticResource WindowDarkStyle}">
-    <Window.DataContext>
-        <vm:AuthWindowViewModel/>
-    </Window.DataContext>
     <GroupBox Header="Authorization"
               Margin="10">
         <DockPanel>

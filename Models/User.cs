@@ -9,5 +9,6 @@
 
         public virtual List<Field> Fields { get; set; }
         public virtual List<Game> Games { get; set; }
+        public override string ToString() => Login;
     }
 }

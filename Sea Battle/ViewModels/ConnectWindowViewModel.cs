@@ -3,7 +3,6 @@ using Models;
 using PropertyChanged;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Controls;
 
 namespace Sea_Battle.ViewModels
 {

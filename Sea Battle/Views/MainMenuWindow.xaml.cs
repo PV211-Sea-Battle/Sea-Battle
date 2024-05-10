@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using Sea_Battle.ViewModels;
+using System.Windows;
 
 namespace Sea_Battle.Views
 {
@@ -7,6 +8,8 @@ namespace Sea_Battle.Views
         public MainMenuWindow()
         {
             InitializeComponent();
+
+            DataContext = new MainMenuWindowViewModel();
         }
     }
 }

@@ -1,25 +1,32 @@
-﻿using Sea_Battle.Infrastructure;
-using Models;
+﻿using Models;
 using PropertyChanged;
+using Sea_Battle.Infrastructure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Xml.Linq;
 
 namespace Sea_Battle.ViewModels
 {
     [AddINotifyPropertyChangedInterface]
-    class ConnectWindowViewModel
+    class CreateWindowViewModel
     {
         public string Name { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
-        public ICommand ConnectCommand { get; }
+        public bool IsChecked { get; set; } = false;
+        public ICommand CreateCommand { get; }
         public ICommand CancelCommand { get; }
-        public ConnectWindowViewModel()
+        public CreateWindowViewModel()
         {
-            ConnectCommand = new RelayCommand<string>(Connect, CanConnect);
+            CreateCommand = new RelayCommand<string>(Create, CanCreate);
             CancelCommand = new RelayCommand(Cancel, CanCancel);
         }
-        public async void Connect(string header)
+        public async void Create(string header)
         {
             try
             {
@@ -27,12 +34,17 @@ namespace Sea_Battle.ViewModels
                 {
                     Header = header,
                     User = CurrentUser.user,
-                    Game = CurrentUser.game,
-                    EnteredGamePassword = Password
+                    Game = new Game
+                    {
+                        Name = Name,
+                        IsPrivate = IsChecked,
+                        Password = Password
+                    }
                 };
 
                 await CurrentUser.SendMessageAsync(request);
                 //CurrentUser.SwitchWindow<PrepareWindow>(this);
+
             }
             catch (Exception ex)
             {
@@ -46,10 +58,12 @@ namespace Sea_Battle.ViewModels
         {
             //CurrentUser.SwitchWindow<MainMenuWindow>(this);
         }
-        public bool CanConnect()
-            => string.IsNullOrEmpty(Name) == false
-            && string.IsNullOrEmpty(Password) == false;
+        public bool CanCreate()
+        {
+            return !string.IsNullOrEmpty(Name) && ((!string.IsNullOrEmpty(Password) && IsChecked) || !IsChecked);
+        }
         public bool CanCancel()
             => true;
+
     }
 }

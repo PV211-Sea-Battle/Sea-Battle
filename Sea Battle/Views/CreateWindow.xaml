@@ -20,7 +20,7 @@
     <GroupBox Header="Create"
               Margin="10">
         <DockPanel>
-            <Grid Margin="80 30">
+            <Grid Margin="80 20">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>

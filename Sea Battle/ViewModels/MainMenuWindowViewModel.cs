@@ -1,6 +1,7 @@
 ﻿using Models;
 using PropertyChanged;
 using Sea_Battle.Infrastructure;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Data;
@@ -11,8 +12,9 @@ namespace Sea_Battle.ViewModels
     [AddINotifyPropertyChangedInterface]
     internal class MainMenuWindowViewModel
     {
+        public readonly CancellationTokenSource cancellationTokenSource = new();
         public ICollectionView SortedGames { get; set; }
-        public List<Game> Games { get; set; } = [];
+        public ObservableCollection<Game> Games { get; set; } = [];
         public Game? SelectedGame { get; set; }
         public ICommand SortCommand { get; }
         public ICommand JoinCommand { get; }
@@ -30,7 +32,7 @@ namespace Sea_Battle.ViewModels
         }
         private async void Refresh()
         {
-            while (true)
+            while (cancellationTokenSource.IsCancellationRequested == false)
             {
                 try
                 {
@@ -49,7 +51,11 @@ namespace Sea_Battle.ViewModels
                             id = SelectedGame.Id;
                         }
 
-                        Games = response.Games!;
+                        Games.Clear();
+                        foreach (Game game in response.Games!)
+                        {
+                            Games.Add(game);
+                        }
 
                         if (id is not null)
                         {

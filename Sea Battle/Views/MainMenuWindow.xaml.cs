@@ -11,5 +11,8 @@ namespace Sea_Battle.Views
 
             DataContext = new MainMenuWindowViewModel();
         }
+
+        private void Window_Closed(object sender, EventArgs e)
+            => ((MainMenuWindowViewModel)DataContext).cancellationTokenSource.Cancel();
     }
 }

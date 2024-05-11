@@ -1,52 +1,60 @@
-﻿using Sea_Battle.Infrastructure;
-using Models;
+﻿using Models;
 using PropertyChanged;
+using Sea_Battle.Infrastructure;
+using Sea_Battle.Views;
 using System.Windows;
 using System.Windows.Input;
-using Sea_Battle.Views;
 
 namespace Sea_Battle.ViewModels
 {
     [AddINotifyPropertyChangedInterface]
-    class ConnectWindowViewModel
+    class CreateWindowViewModel
     {
+        public string Name { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
-        public ICommand ConnectCommand { get; }
+        public bool IsChecked { get; set; }
+        public ICommand CreateCommand { get; }
         public ICommand CancelCommand { get; }
-        public ConnectWindowViewModel()
+        public CreateWindowViewModel()
         {
-            ConnectCommand = new RelayCommand<Window>(Connect, CanConnect);
+            CreateCommand = new RelayCommand<Window>(Create, CanCreate);
             CancelCommand = new RelayCommand<Window>(Cancel);
         }
-        public async void Connect(Window window)
+        public async void Create(Window window)
         {
             try
             {
                 var request = new Request()
                 {
-                    Header = "JOIN",
+                    Header = "CREATE",
                     User = CurrentUser.user,
-                    Game = CurrentUser.game,
-                    EnteredGamePassword = Password
+                    Game = new Game
+                    {
+                        Name = Name,
+                        IsPrivate = IsChecked,
+                        Password = Password
+                    }
                 };
 
                 Response response = await CurrentUser.SendMessageAsync(request);
 
                 CurrentUser.game = response.Game;
-
+                
                 // Построение защиты
-
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
 
+                Name = string.Empty;
                 Password = string.Empty;
             }
         }
         public void Cancel(Window window)
             => CurrentUser.SwitchWindow<MainMenuWindow>(window);
-        public bool CanConnect()
-            => string.IsNullOrEmpty(Password) == false;
+        public bool CanCreate()
+            => string.IsNullOrEmpty(Name) == false
+            && (IsChecked == false
+            || string.IsNullOrEmpty(Password) == false);
     }
 }

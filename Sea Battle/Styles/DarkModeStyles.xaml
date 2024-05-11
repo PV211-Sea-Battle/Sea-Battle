@@ -79,9 +79,6 @@
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
     </Style>
-    <Style x:Key="CheckBoxDarkStyle" TargetType="CheckBox">
-        <Setter Property="Foreground" Value="White"/>
-    </Style>
     <Style x:Key="ButtonDarkStyle" TargetType="Button">
         <Setter Property="Background" Value="Black"/>
         <Setter Property="Foreground" Value="White"/>
@@ -108,5 +105,37 @@
                 <Setter Property="Foreground" Value="DimGray"/>
             </Trigger>
         </Style.Triggers>
+    </Style>
+    <Style x:Key="CheckBoxDarkStyle" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="Black"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <DockPanel>
+                        <Border Width="16"
+                                Height="16"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Background="{TemplateBinding Background}">
+                            <Path Name="CrossMark"
+                                  Stroke="White"
+                                  StrokeThickness="2"
+                                  Data="M 2 2 L 12 12 M 2 12 L 12 2"
+                                  Visibility="Collapsed"/>
+                        </Border>
+                        <ContentPresenter Margin="5 0 0 0"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          Content="{TemplateBinding Content}"/>
+                    </DockPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="CrossMark" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 </ResourceDictionary>

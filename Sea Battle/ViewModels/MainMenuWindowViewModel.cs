@@ -115,9 +115,7 @@ namespace Sea_Battle.ViewModels
             }
         }
         public void Create(Window window)
-        {
-            // Создание игры
-        }
+            => CurrentUser.SwitchWindow<CreateWindow>(window);
         public bool CanJoin()
             => SelectedGame is not null;
     }

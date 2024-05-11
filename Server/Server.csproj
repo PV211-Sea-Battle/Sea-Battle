@@ -25,9 +25,6 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="connectionAddress.ini">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
     <None Update="serverConnectionAddress.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

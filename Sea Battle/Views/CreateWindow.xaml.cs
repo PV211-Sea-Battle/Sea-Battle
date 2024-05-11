@@ -3,13 +3,13 @@ using System.Windows;
 
 namespace Sea_Battle
 {
-    public partial class MainWindow : Window
+    public partial class CreateWindow : Window
     {
-        public MainWindow()
+        public CreateWindow()
         {
             InitializeComponent();
 
-            DataContext = new MainWindowViewModel();
+            DataContext = new CreateWindowViewModel();
         }
     }
 }

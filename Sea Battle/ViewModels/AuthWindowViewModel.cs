@@ -3,24 +3,27 @@ using Models;
 using PropertyChanged;
 using System.Windows;
 using System.Windows.Input;
+using Sea_Battle.Views;
 
 namespace Sea_Battle.ViewModels
 {
     [AddINotifyPropertyChangedInterface]
-    class MainWindowViewModel
+    class AuthWindowViewModel
     {
         public string Login { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string Address { get; set; } = CurrentUser.address ?? string.Empty;
         public string Port { get; set; } = CurrentUser.port.ToString() ?? string.Empty;
-        public ICommand EntryCommand { get; }
+        public ICommand SignInCommand { get; }
+        public ICommand RegisterCommand { get; }
         public ICommand ConnectCommand { get; }
-        public MainWindowViewModel()
+        public AuthWindowViewModel()
         {
-            EntryCommand = new RelayCommand<string>(Entry, CanEntry);
+            SignInCommand = new RelayCommand<Window>(async window => await Entry("SIGN IN", window), CanEntry);
+            RegisterCommand = new RelayCommand<Window>(async window => await Entry("REGISTER", window), CanEntry);
             ConnectCommand = new RelayCommand(Connect, CanConnect);
         }
-        public async void Entry(string header)
+        public async Task Entry(string header, Window window)
         {
             try
             {
@@ -37,6 +40,8 @@ namespace Sea_Battle.ViewModels
                 Response response = await CurrentUser.SendMessageAsync(request);
 
                 CurrentUser.user = response.User;
+
+                CurrentUser.SwitchWindow<MainMenuWindow>(window);
             }
             catch (Exception ex)
             {

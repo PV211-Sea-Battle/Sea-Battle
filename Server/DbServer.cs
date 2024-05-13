@@ -15,8 +15,7 @@ namespace Server
             Console.WriteLine("\nUsers:\n");
             foreach (var user in users)
             {
-                Console.WriteLine($"Id: {user.Id} | Login: {user.Login} | " +
-                    $"Password: {user.Password} | Victories: {user.Victories} | Defeats: {user.Defeats}"); // конфиденциальность 80 лвла
+                Console.WriteLine($"Id: {user.Id} | Login: {user.Login} | Password: {user.Password}"); // конфиденциальность 80 лвла
             }
 
             var games = _db.Game.OrderByDescending(g => g.Id).ToList().Take(5);
@@ -24,14 +23,14 @@ namespace Server
             foreach (var game in games)
             {
                 Console.WriteLine($"Id: {game.Id} | Name: {game.Name} | IsPrivate?: {game.IsPrivate}" +
-                    $"Password: {game.Password} | Winner: {game.Winner} | HostUserId: {game.HostUserId} | ClientUserId: {game.ClientUserId}");
+                    $"Password: {game.Password} | HostUserId: {game.HostUserId} | ClientUserId: {game.ClientUserId}");
             }
 
             var fields = _db.Field.OrderByDescending(f => f.Id).ToList().Take(5);
             Console.WriteLine("\nFields:\n");
             foreach (var field in fields)
             {
-                Console.WriteLine($"Id: {field.Id} | UserId: {field.UserId} | IsActive?: {field.IsActive}");
+                Console.WriteLine($"Id: {field.Id}");
             }
 
             var cells = _db.Cell.OrderByDescending(c => c.Id).ToList().Take(5);
@@ -40,14 +39,6 @@ namespace Server
             {
                 Console.WriteLine($"Id: {cell.Id} | FieldId: {cell.FieldId} | " +
                     $"IsContainsShip?: {cell.IsContainsShip} | IsHit?: {cell.IsHit}");
-            }
-
-            var cgames = _db.CompletedGames.OrderByDescending(cg => cg.Id).ToList().Take(5);
-            Console.WriteLine("\nCompleted Games:\n");
-            foreach (var game in cgames)
-            {
-                Console.WriteLine($"Id: {game.Id} | Name: {game.Name} | IsPrivate?: {game.IsPrivate}" +
-                    $"Password: {game.Password} | Winner: {game.Winner} | HostUserId: {game.HostUserId} | ClientUserId: {game.ClientUserId}");
             }
         }
 
@@ -101,8 +92,9 @@ namespace Server
             try { _db = new ServerDbContext(); }
             catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
             var games = _db.Game
-                .Include(item => item.User)
-                .Where(item => item.ClientUserId == -1).ToList();
+                .Include(item => item.HostUser)
+                .Where(item => item.ClientUserId == null)
+                .ToList();
             return games;
         }
 
@@ -138,7 +130,7 @@ namespace Server
             try { _db = new ServerDbContext(); }
             catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
             bool check = true;
-            var games = _db.Game.Where(item => item.ClientUserId == -1).ToList();
+            var games = _db.Game.Where(item => item.ClientUserId == null).ToList();
 
             foreach (var g in games)
                 if (g.Name == game.Name)
@@ -154,80 +146,14 @@ namespace Server
                     Name = game.Name,
                     IsPrivate = game.IsPrivate,
                     Password = game.Password,
-                    Winner = null,
-                    HostUserId = userId,
-                    ClientUserId = -1
+                    HostUserId = userId
                 });
                 _db.SaveChanges();
                 return (from g in _db.Game
-                       where g.Name.Equals(game.Name) && g.ClientUserId == -1
+                       where g.Name.Equals(game.Name) && g.ClientUserId == null
                        select g).ToList().FirstOrDefault()??null!;
             }
             return null!;
-        }
-
-        public string Ready(Field field)
-        {
-            try { _db = new ServerDbContext(); }
-            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return ex.Message; }
-
-            var user = (from u in _db.User
-                        where u.Id == field.UserId
-                        select u).ToList().FirstOrDefault();
-            if (user is null)
-                return "Incorrect user ID";
-
-            try
-            {
-                bool check = true;
-                foreach(var f in _db.Field)
-                {
-                    if (f.UserId == field.UserId && f.IsActive)
-                        check = false;
-                }
-                if(check)
-                {
-                    field.IsActive = true;
-                    _db.Field.Add(field);
-                    _db.SaveChanges();
-                }
-
-                field.Id = (from f in _db.Field
-                            where f.UserId == field.UserId && f.IsActive
-                            select f.Id).ToList().FirstOrDefault();
-                foreach (var c in field.Cells)
-                {
-                    c.FieldId = field.Id;
-                    _db.Cell.Add(c);
-                }
-                _db.SaveChanges();
-            }
-            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message); return ex.Message; }
-
-            return "SUCCESS";
-        }
-
-        public User EnemyWait(int gameId, int userId)
-        {
-            try { _db = new ServerDbContext(); }
-            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
-            var user = (from u in _db.User
-                        where u.Id == userId
-                        select u).ToList().FirstOrDefault();
-            var game = (from g in _db.Game
-                          where g.Id == gameId
-                          select g).ToList().FirstOrDefault();
-            if (user is null || game is null)
-                return null!;
-
-            if(user.Id == game.HostUserId)
-                userId = game.ClientUserId;
-            else
-                userId = game.HostUserId;
-
-            return (from u in _db.User
-                    where u.Id == userId
-                    select u).ToList().FirstOrDefault()??null!;
         }
     }
 }

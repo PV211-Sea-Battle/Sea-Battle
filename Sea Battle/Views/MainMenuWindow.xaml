@@ -68,10 +68,10 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                         <GridViewColumn Width="250"
-                                        DisplayMemberBinding="{Binding User.Login}">
+                                        DisplayMemberBinding="{Binding HostUser}">
                             <GridViewColumnHeader Content="Host"
                                                   Command="{Binding SortCommand}"
-                                                  CommandParameter="User.Login"/>
+                                                  CommandParameter="HostUser"/>
                         </GridViewColumn>
                     </GridView>
                 </ListView.View>

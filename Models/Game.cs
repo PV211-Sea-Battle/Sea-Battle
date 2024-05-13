@@ -9,20 +9,11 @@ namespace Models
         public string Name { get; set; } = null!;
         public bool IsPrivate { get; set; }
         public string? Password { get; set; }
-        public string? Winner { get; set; }
         public int HostUserId { get; set; }
-        public int ClientUserId { get; set; } = -1; //пока второй игрок не присоединился, тут должно быть -1
+        public int? ClientUserId { get; set; }
 
-
-        //место для будущих доп. настроек
-
-
-        [ForeignKey(nameof(HostUserId))]
-        public virtual User User { get; set; }
-
-        public override string ToString()
-        {
-            return Name;
-        }
+        public User HostUser { get; set; }
+        public User ClientUser { get; set; }
+        public override string ToString() => Name;
     }
 }

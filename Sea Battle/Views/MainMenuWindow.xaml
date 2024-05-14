@@ -1,0 +1,81 @@
+﻿<Window x:Class="Sea_Battle.Views.MainMenuWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:Sea_Battle.Infrastructure"
+        xmlns:local="clr-namespace:Sea_Battle"
+        mc:Ignorable="d"
+        Title="Main Menu"
+        Height="700"
+        Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Style="{StaticResource WindowDarkStyle}"
+        Closed="Window_Closed">
+    <DockPanel Margin="10">
+        <GroupBox DockPanel.Dock="Bottom"
+                  Header="Options">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="4*"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Margin="10"
+                           FontSize="30"
+                           FontWeight="Bold"
+                           Text="{Binding Source={x:Static local:CurrentUser.user}, StringFormat=Welcome\, {0}}"/>
+                <Button Grid.Column="1"
+                        Style="{StaticResource ButtonDarkStyle}"
+                        Content="Join Game"
+                        FontSize="25"
+                        FontWeight="Bold"
+                        Margin="3 0"
+                        Command="{Binding JoinCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+                <Button Grid.Column="2"
+                        Style="{StaticResource ButtonDarkStyle}"
+                        Content="Create Game"
+                        FontSize="25"
+                        FontWeight="Bold"
+                        Margin="3 0"
+                        Command="{Binding CreateCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="Game List">
+            <ListView Style="{StaticResource ListViewDarkStyle}"
+                      ItemsSource="{Binding SortedGames}"
+                      SelectedItem="{Binding SelectedGame}">
+                <ListView.View>
+                    <GridView AllowsColumnReorder="False">
+                        <GridViewColumn Width="250"
+                                        DisplayMemberBinding="{Binding Name}">
+                            <GridViewColumnHeader Content="Name"
+                                                  Command="{Binding SortCommand}"
+                                                  CommandParameter="Name"/>
+                        </GridViewColumn>
+                        <GridViewColumn Width="100">
+                            <GridViewColumnHeader Content="Password"
+                                                  Command="{Binding SortCommand}"
+                                                  CommandParameter="IsPrivate"/>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Image Source="../Resources/locker.png"
+                                           Width="25"
+                                           Visibility="{Binding IsPrivate, Converter={i:BoolToVisibilityConverter}}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Width="250"
+                                        DisplayMemberBinding="{Binding HostUser}">
+                            <GridViewColumnHeader Content="Host"
+                                                  Command="{Binding SortCommand}"
+                                                  CommandParameter="HostUser"/>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </GroupBox>
+    </DockPanel>
+</Window>

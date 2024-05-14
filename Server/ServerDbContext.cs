@@ -11,7 +11,6 @@ namespace Server
         public DbSet<Field> Field { get; set; }
         public DbSet<Cell> Cell { get; set; }
         public DbSet<Game> Game { get; set; }
-        public DbSet<CompletedGame> CompletedGames { get; set; }
 
         public ServerDbContext() : base(GenerateOptions())
         {
@@ -33,12 +32,19 @@ namespace Server
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<Field>().HasOne(f => f.User);
             builder.Entity<Field>().HasMany(f => f.Cells);
 
-            builder.Entity<User>().HasIndex(u => u.Login).IsUnique();
+            builder.Entity<Game>(item =>
+            {
+                item.HasOne(item => item.HostUser)
+                    .WithMany()
+                    .OnDelete(DeleteBehavior.NoAction);
+                item.HasOne(item => item.ClientUser)
+                    .WithMany()
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
-            builder.Entity<CompletedGame>().HasNoKey();
+            builder.Entity<User>().HasIndex(u => u.Login).IsUnique();
         }
     }
 }

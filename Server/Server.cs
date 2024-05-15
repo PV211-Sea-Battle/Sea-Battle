@@ -217,13 +217,54 @@ namespace Server
                                 {
                                     var crResponce = new Response()
                                     {
-                                        ErrorMessage = "Failed to join the game:\nName was already taken or user does not exist"
+                                        ErrorMessage = "Failed to create the game:\nName was already taken or user does not exist"
                                     };
                                     bf.Serialize(ns, crResponce);
                                 }
 
                                 await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
                                     $"{request.Header} request. Login: {request.User.Login}. Room Name: {request.Game.Name} | Status: {status} \n");
+                                break;
+                            case "READY":
+                                status = db.Ready(request.Field, request.User.Id, request.Game.Id);
+                                var rdResponce = new Response();
+                                if (status != "SUCCESS")
+                                {
+                                    rdResponce.ErrorMessage = status;
+                                    status = "FAILURE";
+                                }
+                                bf.Serialize(ns, rdResponce);
+
+                                if (_isExtendedLogsEnabled)
+                                    await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}][EXT-LOG] " +
+                                        $"{request.Header} request. | UserId: {request.User.Id} | Status: {status} \n");
+                                break;
+                            case "ENEMY WAIT":
+                                user = db.EnemyWait(request.Game.Id, request.User.Id);
+                                status = "FAILURE";
+
+                                if (user is not null)
+                                {
+                                    var ewResponce = new Response()
+                                    {
+                                        User = user
+                                    };
+                                    bf.Serialize(ns, ewResponce);
+                                    status = "SUCCESS";
+                                }
+                                else
+                                {
+                                    var ewResponce = new Response()
+                                    {
+                                        ErrorMessage = "Error:\nInvalid user or game"
+                                    };
+                                    bf.Serialize(ns, ewResponce);
+                                }
+
+                                if (_isExtendedLogsEnabled)
+                                    await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}][EXT-LOG] " +
+                                        $"{request.Header} request. | GameId: {request.Game.Id} | " +
+                                        $"UserId: {request.User.Id} | Status: {status} \n");
                                 break;
                             default:
                                 var defaultResponse = new Response()

@@ -11,7 +11,7 @@ namespace Server
         public DbSet<Field> Field { get; set; }
         public DbSet<Cell> Cell { get; set; }
         public DbSet<Game> Game { get; set; }
-
+        public DbSet<CompletedGame> CompletedGame { get; set; }
         public ServerDbContext() : base(GenerateOptions())
         {
             Database.EnsureCreated();
@@ -42,6 +42,12 @@ namespace Server
                 item.HasOne(item => item.ClientUser)
                     .WithMany()
                     .OnDelete(DeleteBehavior.NoAction);
+                item.HasOne(item => item.HostField)
+                    .WithMany()
+                    .OnDelete(DeleteBehavior.NoAction);
+                item.HasOne(item => item.ClientField)
+                   .WithMany()
+                   .OnDelete(DeleteBehavior.NoAction);
             });
 
             builder.Entity<User>().HasIndex(u => u.Login).IsUnique();

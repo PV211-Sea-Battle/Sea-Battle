@@ -1,5 +1,8 @@
-﻿namespace Models
+﻿using PropertyChanged;
+
+namespace Models
 {
+    [AddINotifyPropertyChangedInterface]
     [Serializable]
     public class Cell
     {
@@ -8,6 +11,6 @@
         public bool IsContainsShip { get; set; }
         public bool IsHit { get; set; }
 
-        public virtual Field Field { get; set; }
+        public Field Field { get; set; }
     }
 }

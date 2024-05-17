@@ -6,11 +6,10 @@ using Models;
 #pragma warning disable SYSLIB0011
 #pragma warning disable CS8600
 #pragma warning disable CS8602
-#pragma warning disable CS8604 //мозолят глаза там, где null'ов быть не может
+#pragma warning disable CS8604
 
 namespace Server
 {
-    //------ПЕРЕД ТЕСТАМИ - НАСТРОИТЬ appsettings.json ПОД СЕБЯ------\\
     public class Server
     {
         private static bool _isServerStarted = false;
@@ -149,7 +148,7 @@ namespace Server
 
                                 if(game is not null)
                                 {
-                                    if (game.ClientUserId == -1)
+                                    if (game.ClientUserId == null)
                                     {
                                         if (game.IsPrivate)
                                         {
@@ -218,7 +217,7 @@ namespace Server
                                 {
                                     var crResponce = new Response()
                                     {
-                                        ErrorMessage = "Failed to join the game:\nName was already taken or user does not exist"
+                                        ErrorMessage = "Failed to create the game:\nName was already taken or user does not exist"
                                     };
                                     bf.Serialize(ns, crResponce);
                                 }
@@ -227,9 +226,9 @@ namespace Server
                                     $"{request.Header} request. Login: {request.User.Login}. Room Name: {request.Game.Name} | Status: {status} \n");
                                 break;
                             case "READY":
-                                status = db.Ready(request.Field);
+                                status = db.Ready(request.Field, request.User.Id, request.Game.Id);
                                 var rdResponce = new Response();
-                                if(status != "SUCCESS")
+                                if (status != "SUCCESS")
                                 {
                                     rdResponce.ErrorMessage = status;
                                     status = "FAILURE";
@@ -238,13 +237,13 @@ namespace Server
 
                                 if (_isExtendedLogsEnabled)
                                     await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}][EXT-LOG] " +
-                                        $"{request.Header} request. | UserId: {request.Field.UserId} | Status: {status} \n");
+                                        $"{request.Header} request. | UserId: {request.User.Id} | Status: {status} \n");
                                 break;
                             case "ENEMY WAIT":
                                 user = db.EnemyWait(request.Game.Id, request.User.Id);
                                 status = "FAILURE";
 
-                                if(user is not null)
+                                if (user is not null)
                                 {
                                     var ewResponce = new Response()
                                     {
@@ -266,18 +265,6 @@ namespace Server
                                     await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}][EXT-LOG] " +
                                         $"{request.Header} request. | GameId: {request.Game.Id} | " +
                                         $"UserId: {request.User.Id} | Status: {status} \n");
-                                break;
-                            case "REFRESH":
-                                throw new NotImplementedException();
-                                break;
-                            case "SHOOT":
-                                throw new NotImplementedException();
-                                break;
-                            case "FORFREIT":
-                                throw new NotImplementedException();
-                                break;
-                            case "REMATCH":
-                                throw new NotImplementedException();
                                 break;
                             default:
                                 var defaultResponse = new Response()

@@ -1,6 +1,7 @@
 ﻿using Models;
 using PropertyChanged;
 using Sea_Battle.Infrastructure;
+using Sea_Battle.Views;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
@@ -106,7 +107,7 @@ namespace Sea_Battle.ViewModels
 
                     CurrentUser.game = response.Game;
 
-                    // Построение защиты
+                    CurrentUser.SwitchWindow<LobbyWindow>(window);
                 }
                 catch (Exception ex)
                 {

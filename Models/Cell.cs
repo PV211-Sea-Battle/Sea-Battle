@@ -1,5 +1,8 @@
-﻿namespace Models
+﻿using PropertyChanged;
+
+namespace Models
 {
+    [AddINotifyPropertyChangedInterface]
     [Serializable]
     public class Cell
     {

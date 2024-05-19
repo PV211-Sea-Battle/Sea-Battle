@@ -181,20 +181,19 @@ namespace Server
                 return "Incorrect user ID";
             if (game is null)
                 return "Incorrect game ID";
-
             try
             {
+                if (!CheckField(field))
+                    return "Incorrect ships placement";
+
                 field.GameId = gameId;
                 if (userId == game.HostUserId)
                 {
                     if (game.HostFieldId == null)
                     {
-                        field.IsBelongToHost = true;
-                        _db.Field.Add(field);
+                        game.HostField = field;
                         _db.SaveChanges();
-                        game.HostFieldId = (from f in _db.Field
-                                            where f.GameId == gameId && f.IsBelongToHost
-                                            select f.Id).ToList().FirstOrDefault();
+                        game.HostFieldId = game.HostField.Id;
                         _db.SaveChanges();
                         fieldId = -1;
                     }
@@ -204,12 +203,9 @@ namespace Server
                 {
                     if (game.ClientFieldId == null)
                     {
-                        field.IsBelongToHost = false;
-                        _db.Field.Add(field);
+                        game.ClientField = field;
                         _db.SaveChanges();
-                        game.ClientFieldId = (from f in _db.Field
-                                              where f.GameId == gameId && !f.IsBelongToHost
-                                              select f.Id).ToList().FirstOrDefault();
+                        game.ClientFieldId = game.ClientField.Id;
                         _db.SaveChanges();
                         fieldId = -1;
                     }
@@ -256,6 +252,1212 @@ namespace Server
             return (from u in _db.User
                     where u.Id == userId
                     select u).ToList().FirstOrDefault() ?? null!;
+        }
+
+
+        //оптимизация? не, не слышал
+        private static bool CheckField(Field field)
+        {
+            int[] shipCount = [4, 3, 2, 1];
+            List<int> busyCells = [];
+            var c = field.Cells;
+
+            bool IsCellFree(int i)
+            {
+                foreach (int bc in busyCells)
+                    if (i == bc)
+                        return false;
+                return true;
+            }
+
+            for(int i = 0; i < field.Cells.Count; i++)
+            {
+                if (c[i].IsContainsShip && IsCellFree(i))
+                {
+                    if (i == 0)
+                    {
+                        if (c[i + 1].IsContainsShip)
+                        {
+                            if (c[i + 2].IsContainsShip)
+                            {
+                                if (c[i + 3].IsContainsShip)
+                                {
+                                    if (c[i + 4].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i + 1);
+                                        busyCells.Add(i + 2);
+                                        busyCells.Add(i + 3);
+                                        busyCells.Add(i + 4);
+                                        busyCells.Add(i + 10);
+                                        busyCells.Add(i + 11);
+                                        busyCells.Add(i + 12);
+                                        busyCells.Add(i + 13);
+                                        busyCells.Add(i + 14);
+                                    }
+                                    if (c[i + 13].IsContainsShip || c[i + 14].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i + 1);
+                                    busyCells.Add(i + 2);
+                                    busyCells.Add(i + 3);
+                                    busyCells.Add(i + 10);
+                                    busyCells.Add(i + 11);
+                                    busyCells.Add(i + 12);
+                                    busyCells.Add(i + 13);
+                                }
+                                if (c[i + 12].IsContainsShip || c[i + 13].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i + 1);
+                                busyCells.Add(i + 2);
+                                busyCells.Add(i + 10);
+                                busyCells.Add(i + 11);
+                                busyCells.Add(i + 12);
+                            }
+                            if (c[i + 10].IsContainsShip || c[i + 11].IsContainsShip || c[i + 12].IsContainsShip)
+                                return false;
+                        }
+                        else if (c[i + 10].IsContainsShip)
+                        {
+                            if (c[i + 20].IsContainsShip)
+                            {
+                                if (c[i + 30].IsContainsShip)
+                                {
+                                    if (c[i + 40].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i + 1);
+                                        busyCells.Add(i + 10);
+                                        busyCells.Add(i + 11);
+                                        busyCells.Add(i + 20);
+                                        busyCells.Add(i + 21);
+                                        busyCells.Add(i + 30);
+                                        busyCells.Add(i + 31);
+                                        busyCells.Add(i + 40);
+                                        busyCells.Add(i + 41);
+                                    }
+                                    if (c[i + 31].IsContainsShip || c[i + 41].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i + 1);
+                                    busyCells.Add(i + 10);
+                                    busyCells.Add(i + 11);
+                                    busyCells.Add(i + 20);
+                                    busyCells.Add(i + 21);
+                                    busyCells.Add(i + 30);
+                                    busyCells.Add(i + 31);
+                                }
+                                if (c[i + 21].IsContainsShip || c[i + 31].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i + 1);
+                                busyCells.Add(i + 10);
+                                busyCells.Add(i + 11);
+                                busyCells.Add(i + 20);
+                                busyCells.Add(i + 21);
+                            }
+                            if (c[i + 11].IsContainsShip || c[i + 21].IsContainsShip)
+                                return false;
+                        }
+                        else
+                        {
+                            shipCount[0]--;
+                            busyCells.Add(i);
+                            busyCells.Add(i + 1);
+                            busyCells.Add(i + 10);
+                            busyCells.Add(i + 11);
+                            if (c[i + 11].IsContainsShip)
+                                return false;
+                        }
+                    }
+                    else if (i == 9)
+                    {
+                        if (c[i - 1].IsContainsShip)
+                        {
+                            if (c[i - 2].IsContainsShip)
+                            {
+                                if (c[i - 3].IsContainsShip)
+                                {
+                                    if (c[i - 4].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i - 1);
+                                        busyCells.Add(i - 2);
+                                        busyCells.Add(i - 3);
+                                        busyCells.Add(i - 4);
+                                        busyCells.Add(i + 6);
+                                        busyCells.Add(i + 7);
+                                        busyCells.Add(i + 8);
+                                        busyCells.Add(i + 9);
+                                        busyCells.Add(i + 10);
+                                    }
+                                    if (c[i + 7].IsContainsShip || c[i + 6].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i - 1);
+                                    busyCells.Add(i - 2);
+                                    busyCells.Add(i - 3);
+                                    busyCells.Add(i + 7);
+                                    busyCells.Add(i + 8);
+                                    busyCells.Add(i + 9);
+                                    busyCells.Add(i + 10);
+                                }
+                                if (c[i + 8].IsContainsShip || c[i + 7].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i - 1);
+                                busyCells.Add(i - 2);
+                                busyCells.Add(i + 8);
+                                busyCells.Add(i + 9);
+                                busyCells.Add(i + 10);
+                            }
+                            if (c[i + 10].IsContainsShip || c[i + 9].IsContainsShip || c[i + 8].IsContainsShip)
+                                return false;
+                        }
+                        else if (c[i + 10].IsContainsShip)
+                        {
+                            if (c[i + 20].IsContainsShip)
+                            {
+                                if (c[i + 30].IsContainsShip)
+                                {
+                                    if (c[i + 40].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i - 1);
+                                        busyCells.Add(i + 9);
+                                        busyCells.Add(i + 10);
+                                        busyCells.Add(i + 19);
+                                        busyCells.Add(i + 20);
+                                        busyCells.Add(i + 29);
+                                        busyCells.Add(i + 30);
+                                        busyCells.Add(i + 39);
+                                        busyCells.Add(i + 40);
+                                    }
+                                    if (c[i + 29].IsContainsShip || c[i + 39].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i - 1);
+                                    busyCells.Add(i + 9);
+                                    busyCells.Add(i + 10);
+                                    busyCells.Add(i + 19);
+                                    busyCells.Add(i + 20);
+                                    busyCells.Add(i + 29);
+                                    busyCells.Add(i + 30);
+                                }
+                                if (c[i + 19].IsContainsShip || c[i + 29].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i - 1);
+                                busyCells.Add(i + 9);
+                                busyCells.Add(i + 10);
+                                busyCells.Add(i + 19);
+                                busyCells.Add(i + 20);
+                            }
+                            if (c[i + 9].IsContainsShip || c[i + 19].IsContainsShip)
+                                return false;
+                        }
+                        else
+                        {
+                            shipCount[0]--;
+                            busyCells.Add(i);
+                            busyCells.Add(i - 1);
+                            busyCells.Add(i + 9);
+                            busyCells.Add(i + 10);
+                            if (c[i + 9].IsContainsShip)
+                                return false;
+                        }
+                    }
+                    else if (i == 90)
+                    {
+                        if (c[i + 1].IsContainsShip)
+                        {
+                            if (c[i + 2].IsContainsShip)
+                            {
+                                if (c[i + 3].IsContainsShip)
+                                {
+                                    if (c[i + 4].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i + 1);
+                                        busyCells.Add(i + 2);
+                                        busyCells.Add(i + 3);
+                                        busyCells.Add(i + 4);
+                                        busyCells.Add(i - 6);
+                                        busyCells.Add(i - 7);
+                                        busyCells.Add(i - 8);
+                                        busyCells.Add(i - 9);
+                                        busyCells.Add(i - 10);
+                                    }
+                                    if (c[i - 7].IsContainsShip || c[i - 6].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i + 1);
+                                    busyCells.Add(i + 2);
+                                    busyCells.Add(i + 3);
+                                    busyCells.Add(i - 7);
+                                    busyCells.Add(i - 8);
+                                    busyCells.Add(i - 9);
+                                    busyCells.Add(i - 10);
+                                }
+                                if (c[i - 8].IsContainsShip || c[i - 7].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i + 1);
+                                busyCells.Add(i + 2);
+                                busyCells.Add(i - 8);
+                                busyCells.Add(i - 9);
+                                busyCells.Add(i - 10);
+                            }
+                            if (c[i - 10].IsContainsShip || c[i - 9].IsContainsShip || c[i - 8].IsContainsShip)
+                                return false;
+                        }
+                        else if (c[i - 10].IsContainsShip)
+                        {
+                            if (c[i - 20].IsContainsShip)
+                            {
+                                if (c[i - 30].IsContainsShip)
+                                {
+                                    if (c[i - 40].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i + 1);
+                                        busyCells.Add(i - 9);
+                                        busyCells.Add(i - 10);
+                                        busyCells.Add(i - 19);
+                                        busyCells.Add(i - 20);
+                                        busyCells.Add(i - 29);
+                                        busyCells.Add(i - 30);
+                                        busyCells.Add(i - 39);
+                                        busyCells.Add(i - 40);
+                                    }
+                                    if (c[i - 29].IsContainsShip || c[i - 39].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i + 1);
+                                    busyCells.Add(i - 9);
+                                    busyCells.Add(i - 10);
+                                    busyCells.Add(i - 19);
+                                    busyCells.Add(i - 20);
+                                    busyCells.Add(i - 29);
+                                    busyCells.Add(i - 30);
+                                }
+                                if (c[i - 19].IsContainsShip || c[i - 29].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i + 1);
+                                busyCells.Add(i - 9);
+                                busyCells.Add(i - 10);
+                                busyCells.Add(i - 19);
+                                busyCells.Add(i - 20);
+                            }
+                            if (c[i - 9].IsContainsShip || c[i - 19].IsContainsShip)
+                                return false;
+                        }
+                        else
+                        {
+                            shipCount[0]--;
+                            busyCells.Add(i);
+                            busyCells.Add(i + 1);
+                            busyCells.Add(i - 9);
+                            busyCells.Add(i - 10);
+                            if (c[i - 9].IsContainsShip)
+                                return false;
+                        }
+                    }
+                    else if (i == 99)
+                    {
+                        if (c[i - 1].IsContainsShip)
+                        {
+                            if (c[i - 2].IsContainsShip)
+                            {
+                                if (c[i - 3].IsContainsShip)
+                                {
+                                    if (c[i - 4].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i - 1);
+                                        busyCells.Add(i - 2);
+                                        busyCells.Add(i - 3);
+                                        busyCells.Add(i - 4);
+                                        busyCells.Add(i - 10);
+                                        busyCells.Add(i - 11);
+                                        busyCells.Add(i - 12);
+                                        busyCells.Add(i - 13);
+                                        busyCells.Add(i - 14);
+
+                                    }
+                                    if (c[i - 13].IsContainsShip || c[i - 14].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i - 1);
+                                    busyCells.Add(i - 2);
+                                    busyCells.Add(i - 3);
+                                    busyCells.Add(i - 10);
+                                    busyCells.Add(i - 11);
+                                    busyCells.Add(i - 12);
+                                    busyCells.Add(i - 13);
+                                }
+                                if (c[i - 12].IsContainsShip || c[i - 13].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i - 1);
+                                busyCells.Add(i - 2);
+                                busyCells.Add(i - 10);
+                                busyCells.Add(i - 11);
+                                busyCells.Add(i - 12);
+                            }
+                            if (c[i - 10].IsContainsShip || c[i - 11].IsContainsShip || c[i - 12].IsContainsShip)
+                                return false;
+                        }
+                        else if (c[i - 10].IsContainsShip)
+                        {
+                            if (c[i - 20].IsContainsShip)
+                            {
+                                if (c[i - 30].IsContainsShip)
+                                {
+                                    if (c[i - 40].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i - 1);
+                                        busyCells.Add(i - 10);
+                                        busyCells.Add(i - 11);
+                                        busyCells.Add(i - 20);
+                                        busyCells.Add(i - 21);
+                                        busyCells.Add(i - 30);
+                                        busyCells.Add(i - 31);
+                                        busyCells.Add(i - 40);
+                                        busyCells.Add(i - 41);
+                                    }
+                                    if (c[i - 31].IsContainsShip || c[i - 41].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i - 1);
+                                    busyCells.Add(i - 10);
+                                    busyCells.Add(i - 11);
+                                    busyCells.Add(i - 20);
+                                    busyCells.Add(i - 21);
+                                    busyCells.Add(i - 30);
+                                    busyCells.Add(i - 31);
+                                }
+                                if (c[i - 21].IsContainsShip || c[i - 31].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i - 1);
+                                busyCells.Add(i - 10);
+                                busyCells.Add(i - 11);
+                                busyCells.Add(i - 20);
+                                busyCells.Add(i - 21);
+                            }
+                            if (c[i - 11].IsContainsShip || c[i - 21].IsContainsShip)
+                                return false;
+                        }
+                        else
+                        {
+                            shipCount[0]--;
+                            busyCells.Add(i);
+                            busyCells.Add(i - 1);
+                            busyCells.Add(i - 10);
+                            busyCells.Add(i - 11);
+                            if (c[i - 11].IsContainsShip)
+                                return false;
+                        }
+                    }
+                }
+            }
+
+            for (int i = 1; i < field.Cells.Count - 1; i++)
+            {
+                if (c[i].IsContainsShip && IsCellFree(i))
+                {
+                    if (i >= 1 && i <= 8)
+                    {
+                        if (c[i + 1].IsContainsShip)
+                        {
+                            if (c[i + 2].IsContainsShip)
+                            {
+                                if (c[i + 3].IsContainsShip)
+                                {
+                                    if (c[i + 4].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i - 1);
+                                        busyCells.Add(i + 1);
+                                        busyCells.Add(i + 2);
+                                        busyCells.Add(i + 3);
+                                        busyCells.Add(i + 4);
+                                        busyCells.Add(i + 9);
+                                        busyCells.Add(i + 10);
+                                        busyCells.Add(i + 11);
+                                        busyCells.Add(i + 12);
+                                        busyCells.Add(i + 13);
+                                        busyCells.Add(i + 14);
+                                    }
+                                    if (c[i + 13].IsContainsShip || c[i + 14].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i - 1);
+                                    busyCells.Add(i + 1);
+                                    busyCells.Add(i + 2);
+                                    busyCells.Add(i + 3);
+                                    busyCells.Add(i + 9);
+                                    busyCells.Add(i + 10);
+                                    busyCells.Add(i + 11);
+                                    busyCells.Add(i + 12);
+                                    busyCells.Add(i + 13);
+                                }
+                                if (c[i + 12].IsContainsShip || c[i + 13].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i - 1);
+                                busyCells.Add(i + 1);
+                                busyCells.Add(i + 2);
+                                busyCells.Add(i + 9);
+                                busyCells.Add(i + 10);
+                                busyCells.Add(i + 11);
+                                busyCells.Add(i + 12);
+                            }
+                            if (c[i + 9].IsContainsShip || c[i + 10].IsContainsShip || c[i + 11].IsContainsShip || c[i + 12].IsContainsShip)
+                                return false;
+                        }
+                        else if (c[i + 10].IsContainsShip)
+                        {
+                            if (c[i + 20].IsContainsShip)
+                            {
+                                if (c[i + 30].IsContainsShip)
+                                {
+                                    if (c[i + 40].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i - 1);
+                                        busyCells.Add(i + 1);
+                                        busyCells.Add(i + 9);
+                                        busyCells.Add(i + 10);
+                                        busyCells.Add(i + 11);
+                                        busyCells.Add(i + 19);
+                                        busyCells.Add(i + 20);
+                                        busyCells.Add(i + 21);
+                                        busyCells.Add(i + 29);
+                                        busyCells.Add(i + 30);
+                                        busyCells.Add(i + 31);
+                                        busyCells.Add(i + 39);
+                                        busyCells.Add(i + 40);
+                                        busyCells.Add(i + 41);
+                                    }
+                                    if (c[i + 29].IsContainsShip || c[i + 31].IsContainsShip || c[i + 39].IsContainsShip || c[i + 41].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i - 1);
+                                    busyCells.Add(i + 1);
+                                    busyCells.Add(i + 9);
+                                    busyCells.Add(i + 10);
+                                    busyCells.Add(i + 11);
+                                    busyCells.Add(i + 19);
+                                    busyCells.Add(i + 20);
+                                    busyCells.Add(i + 21);
+                                    busyCells.Add(i + 29);
+                                    busyCells.Add(i + 30);
+                                    busyCells.Add(i + 31);
+                                }
+                                if (c[i + 19].IsContainsShip || c[i + 21].IsContainsShip || c[i + 29].IsContainsShip || c[i + 31].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i - 1);
+                                busyCells.Add(i + 1);
+                                busyCells.Add(i + 9);
+                                busyCells.Add(i + 10);
+                                busyCells.Add(i + 11);
+                                busyCells.Add(i + 19);
+                                busyCells.Add(i + 20);
+                                busyCells.Add(i + 21);
+                            }
+                            if (c[i + 9].IsContainsShip || c[i + 11].IsContainsShip || c[i + 19].IsContainsShip || c[i + 21].IsContainsShip)
+                                return false;
+                        }
+                        else
+                        {
+                            shipCount[0]--;
+                            busyCells.Add(i);
+                            busyCells.Add(i - 1);
+                            busyCells.Add(i + 1);
+                            busyCells.Add(i + 9);
+                            busyCells.Add(i + 10);
+                            busyCells.Add(i + 11);
+                            if (c[i + 9].IsContainsShip || c[i + 11].IsContainsShip)
+                                return false;
+                        }
+                    }
+                    else if (i >= 91 && i <= 98)
+                    {
+                        if (c[i + 1].IsContainsShip)
+                        {
+                            if (c[i + 2].IsContainsShip)
+                            {
+                                if (c[i + 3].IsContainsShip)
+                                {
+                                    if (c[i + 4].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i - 1);
+                                        busyCells.Add(i + 1);
+                                        busyCells.Add(i + 2);
+                                        busyCells.Add(i + 3);
+                                        busyCells.Add(i + 4);
+                                        busyCells.Add(i - 6);
+                                        busyCells.Add(i - 7);
+                                        busyCells.Add(i - 8);
+                                        busyCells.Add(i - 9);
+                                        busyCells.Add(i - 10);
+                                        busyCells.Add(i - 11);
+                                    }
+                                    if (c[i - 7].IsContainsShip || c[i - 6].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i - 1);
+                                    busyCells.Add(i + 1);
+                                    busyCells.Add(i + 2);
+                                    busyCells.Add(i + 3);
+                                    busyCells.Add(i - 7);
+                                    busyCells.Add(i - 8);
+                                    busyCells.Add(i - 9);
+                                    busyCells.Add(i - 10);
+                                    busyCells.Add(i - 11);
+                                }
+                                if (c[i - 8].IsContainsShip || c[i - 7].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i - 1);
+                                busyCells.Add(i + 1);
+                                busyCells.Add(i + 2);
+                                busyCells.Add(i - 8);
+                                busyCells.Add(i - 9);
+                                busyCells.Add(i - 10);
+                                busyCells.Add(i - 11);
+                            }
+                            if (c[i - 11].IsContainsShip || c[i - 10].IsContainsShip || c[i - 9].IsContainsShip || c[i - 8].IsContainsShip)
+                                return false;
+                        }
+                        else if (c[i - 10].IsContainsShip)
+                        {
+                            if (c[i - 20].IsContainsShip)
+                            {
+                                if (c[i - 30].IsContainsShip)
+                                {
+                                    if (c[i - 40].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i - 1);
+                                        busyCells.Add(i + 1);
+                                        busyCells.Add(i - 9);
+                                        busyCells.Add(i - 10);
+                                        busyCells.Add(i - 11);
+                                        busyCells.Add(i - 19);
+                                        busyCells.Add(i - 20);
+                                        busyCells.Add(i - 21);
+                                        busyCells.Add(i - 29);
+                                        busyCells.Add(i - 30);
+                                        busyCells.Add(i - 39);
+                                        busyCells.Add(i - 40);
+                                        busyCells.Add(i - 41);
+                                    }
+                                    if (c[i - 39].IsContainsShip || c[i - 41].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i - 1);
+                                    busyCells.Add(i + 1);
+                                    busyCells.Add(i - 9);
+                                    busyCells.Add(i - 10);
+                                    busyCells.Add(i - 11);
+                                    busyCells.Add(i - 19);
+                                    busyCells.Add(i - 20);
+                                    busyCells.Add(i - 21);
+                                    busyCells.Add(i - 29);
+                                    busyCells.Add(i - 30);
+                                    busyCells.Add(i - 31);
+                                }
+                                if (c[i - 29].IsContainsShip || c[i - 31].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i - 1);
+                                busyCells.Add(i + 1);
+                                busyCells.Add(i - 9);
+                                busyCells.Add(i - 10);
+                                busyCells.Add(i - 11);
+                                busyCells.Add(i - 19);
+                                busyCells.Add(i - 20);
+                                busyCells.Add(i - 21);
+                            }
+                            if (c[i - 9].IsContainsShip || c[i - 11].IsContainsShip || c[i - 19].IsContainsShip || c[i - 21].IsContainsShip)
+                                return false;
+                        }
+                        else
+                        {
+                            shipCount[0]--;
+                            busyCells.Add(i);
+                            busyCells.Add(i - 1);
+                            busyCells.Add(i + 1);
+                            busyCells.Add(i - 9);
+                            busyCells.Add(i - 10);
+                            busyCells.Add(i - 11);
+                            if (c[i - 9].IsContainsShip || c[i - 11].IsContainsShip)
+                                return false;
+                        }
+                    }
+                    else if (i % 10 == 0)
+                    {
+                        if (c[i + 1].IsContainsShip)
+                        {
+                            if (c[i + 2].IsContainsShip)
+                            {
+                                if (c[i + 3].IsContainsShip)
+                                {
+                                    if (c[i + 4].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i + 1);
+                                        busyCells.Add(i + 2);
+                                        busyCells.Add(i + 3);
+                                        busyCells.Add(i + 4);
+                                        busyCells.Add(i + 10);
+                                        busyCells.Add(i + 11);
+                                        busyCells.Add(i + 12);
+                                        busyCells.Add(i + 13);
+                                        busyCells.Add(i + 14);
+                                    }
+                                    if (c[i + 13].IsContainsShip || c[i + 14].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i + 1);
+                                    busyCells.Add(i + 2);
+                                    busyCells.Add(i + 3);
+                                    busyCells.Add(i + 10);
+                                    busyCells.Add(i + 11);
+                                    busyCells.Add(i + 12);
+                                    busyCells.Add(i + 13);
+                                }
+                                if (c[i + 12].IsContainsShip || c[i + 13].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i + 1);
+                                busyCells.Add(i + 2);
+                                busyCells.Add(i + 10);
+                                busyCells.Add(i + 11);
+                                busyCells.Add(i + 12);
+                            }
+                            if (c[i + 10].IsContainsShip || c[i + 11].IsContainsShip || c[i + 12].IsContainsShip)
+                                return false;
+                        }
+                        else if (c[i + 10].IsContainsShip)
+                        {
+                            if (c[i + 20].IsContainsShip)
+                            {
+                                if (c[i + 30].IsContainsShip)
+                                {
+                                    if (c[i + 40].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i + 1);
+                                        busyCells.Add(i + 10);
+                                        busyCells.Add(i + 11);
+                                        busyCells.Add(i + 20);
+                                        busyCells.Add(i + 21);
+                                        busyCells.Add(i + 30);
+                                        busyCells.Add(i + 31);
+                                        busyCells.Add(i + 40);
+                                        busyCells.Add(i + 41);
+                                    }
+                                    if (c[i + 31].IsContainsShip || c[i + 41].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i + 1);
+                                    busyCells.Add(i + 10);
+                                    busyCells.Add(i + 11);
+                                    busyCells.Add(i + 20);
+                                    busyCells.Add(i + 21);
+                                    busyCells.Add(i + 30);
+                                    busyCells.Add(i + 31);
+                                }
+                                if (c[i + 21].IsContainsShip || c[i + 31].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i + 1);
+                                busyCells.Add(i + 10);
+                                busyCells.Add(i + 11);
+                                busyCells.Add(i + 20);
+                                busyCells.Add(i + 21);
+                            }
+                            if (c[i + 11].IsContainsShip || c[i + 21].IsContainsShip)
+                                return false;
+                        }
+                        else
+                        {
+                            shipCount[0]--;
+                            busyCells.Add(i);
+                            busyCells.Add(i + 1);
+                            busyCells.Add(i + 10);
+                            busyCells.Add(i + 11);
+                            if (c[i + 11].IsContainsShip)
+                                return false;
+                        }
+                    }
+                    else if (i % 10 == 9)
+                    {
+                        if (c[i - 1].IsContainsShip)
+                        {
+                            if (c[i - 2].IsContainsShip)
+                            {
+                                if (c[i - 3].IsContainsShip)
+                                {
+                                    if (c[i - 4].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i - 1);
+                                        busyCells.Add(i - 2);
+                                        busyCells.Add(i - 3);
+                                        busyCells.Add(i - 4);
+                                        busyCells.Add(i + 6);
+                                        busyCells.Add(i + 7);
+                                        busyCells.Add(i + 8);
+                                        busyCells.Add(i + 9);
+                                        busyCells.Add(i + 10);
+                                    }
+                                    if (c[i + 7].IsContainsShip || c[i + 6].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i - 1);
+                                    busyCells.Add(i - 2);
+                                    busyCells.Add(i - 3);
+                                    busyCells.Add(i + 7);
+                                    busyCells.Add(i + 8);
+                                    busyCells.Add(i + 9);
+                                    busyCells.Add(i + 10);
+                                }
+                                if (c[i + 8].IsContainsShip || c[i + 7].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i - 1);
+                                busyCells.Add(i - 2);
+                                busyCells.Add(i + 8);
+                                busyCells.Add(i + 9);
+                                busyCells.Add(i + 10);
+                            }
+                            if (c[i + 10].IsContainsShip || c[i + 9].IsContainsShip || c[i + 8].IsContainsShip)
+                                return false;
+                        }
+                        else if (c[i + 10].IsContainsShip)
+                        {
+                            if (c[i + 20].IsContainsShip)
+                            {
+                                if (c[i + 30].IsContainsShip)
+                                {
+                                    if (c[i + 40].IsContainsShip)
+                                        return false;
+                                    else
+                                    {
+                                        shipCount[3]--;
+                                        busyCells.Add(i);
+                                        busyCells.Add(i - 1);
+                                        busyCells.Add(i + 9);
+                                        busyCells.Add(i + 10);
+                                        busyCells.Add(i + 19);
+                                        busyCells.Add(i + 20);
+                                        busyCells.Add(i + 29);
+                                        busyCells.Add(i + 30);
+                                        busyCells.Add(i + 39);
+                                        busyCells.Add(i + 40);
+                                    }
+                                    if (c[i + 29].IsContainsShip || c[i + 39].IsContainsShip)
+                                        return false;
+                                }
+                                else
+                                {
+                                    shipCount[2]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i - 1);
+                                    busyCells.Add(i + 9);
+                                    busyCells.Add(i + 10);
+                                    busyCells.Add(i + 19);
+                                    busyCells.Add(i + 20);
+                                    busyCells.Add(i + 29);
+                                    busyCells.Add(i + 30);
+                                }
+                                if (c[i + 19].IsContainsShip || c[i + 29].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[1]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i - 1);
+                                busyCells.Add(i + 9);
+                                busyCells.Add(i + 10);
+                                busyCells.Add(i + 19);
+                                busyCells.Add(i + 20);
+                            }
+                            if (c[i + 9].IsContainsShip || c[i + 19].IsContainsShip)
+                                return false;
+                        }
+                        else
+                        {
+                            shipCount[0]--;
+                            busyCells.Add(i);
+                            busyCells.Add(i - 1);
+                            busyCells.Add(i + 9);
+                            busyCells.Add(i + 10);
+                            if (c[i + 9].IsContainsShip)
+                                return false;
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < field.Cells.Count; i++)
+            {
+                if (c[i].IsContainsShip && IsCellFree(i))
+                {
+                    if (c[i + 1].IsContainsShip)
+                    {
+                        if (c[i + 2].IsContainsShip)
+                        {
+                            if (c[i + 3].IsContainsShip)
+                            {
+                                if (c[i + 4].IsContainsShip)
+                                    return false;
+                                else
+                                {
+                                    shipCount[3]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i - 11);
+                                    busyCells.Add(i - 10);
+                                    busyCells.Add(i - 9);
+                                    busyCells.Add(i - 8);
+                                    busyCells.Add(i - 7);
+                                    busyCells.Add(i - 6);
+                                    busyCells.Add(i - 1);
+                                    busyCells.Add(i + 1);
+                                    busyCells.Add(i + 2);
+                                    busyCells.Add(i + 3);
+                                    busyCells.Add(i + 4);
+                                    busyCells.Add(i + 9);
+                                    busyCells.Add(i + 10);
+                                    busyCells.Add(i + 11);
+                                    busyCells.Add(i + 12);
+                                    busyCells.Add(i + 13);
+                                    busyCells.Add(i + 14);
+                                }
+                                if (c[i + 14].IsContainsShip || c[i - 6].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[2]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i - 11);
+                                busyCells.Add(i - 10);
+                                busyCells.Add(i - 9);
+                                busyCells.Add(i - 8);
+                                busyCells.Add(i - 7);
+                                busyCells.Add(i - 1);
+                                busyCells.Add(i + 1);
+                                busyCells.Add(i + 2);
+                                busyCells.Add(i + 3);
+                                busyCells.Add(i + 9);
+                                busyCells.Add(i + 10);
+                                busyCells.Add(i + 11);
+                                busyCells.Add(i + 12);
+                                busyCells.Add(i + 13);
+                            }
+                            if (c[i + 13].IsContainsShip || c[i - 7].IsContainsShip)
+                                return false;
+                        }
+                        else
+                        {
+                            shipCount[1]--;
+                            busyCells.Add(i);
+                            busyCells.Add(i - 11);
+                            busyCells.Add(i - 10);
+                            busyCells.Add(i - 9);
+                            busyCells.Add(i - 8);
+                            busyCells.Add(i - 1);
+                            busyCells.Add(i + 1);
+                            busyCells.Add(i + 2);
+                            busyCells.Add(i + 9);
+                            busyCells.Add(i + 10);
+                            busyCells.Add(i + 11);
+                            busyCells.Add(i + 12);
+                        }
+                        if (c[i + 9].IsContainsShip || c[i + 10].IsContainsShip || c[i + 11].IsContainsShip || c[i + 12].IsContainsShip
+                            || c[i - 11].IsContainsShip || c[i - 10].IsContainsShip || c[i - 9].IsContainsShip || c[i - 8].IsContainsShip)
+                            return false;
+                    }
+                    else if (c[i + 10].IsContainsShip)
+                    {
+                        if (c[i + 20].IsContainsShip)
+                        {
+                            if (c[i + 30].IsContainsShip)
+                            {
+                                if (c[i + 40].IsContainsShip)
+                                    return false;
+                                else
+                                {
+                                    shipCount[3]--;
+                                    busyCells.Add(i);
+                                    busyCells.Add(i - 11);
+                                    busyCells.Add(i - 10);
+                                    busyCells.Add(i - 9);
+                                    busyCells.Add(i - 1);
+                                    busyCells.Add(i + 1);
+                                    busyCells.Add(i + 9);
+                                    busyCells.Add(i + 10);
+                                    busyCells.Add(i + 11);
+                                    busyCells.Add(i + 19);
+                                    busyCells.Add(i + 20);
+                                    busyCells.Add(i + 21);
+                                    busyCells.Add(i + 29);
+                                    busyCells.Add(i + 30);
+                                    busyCells.Add(i + 31);
+                                    busyCells.Add(i + 39);
+                                    busyCells.Add(i + 40);
+                                    busyCells.Add(i + 41);
+                                }
+                                if (c[i + 39].IsContainsShip || c[i + 41].IsContainsShip)
+                                    return false;
+                            }
+                            else
+                            {
+                                shipCount[2]--;
+                                busyCells.Add(i);
+                                busyCells.Add(i - 11);
+                                busyCells.Add(i - 10);
+                                busyCells.Add(i - 9);
+                                busyCells.Add(i - 1);
+                                busyCells.Add(i + 1);
+                                busyCells.Add(i + 9);
+                                busyCells.Add(i + 10);
+                                busyCells.Add(i + 11);
+                                busyCells.Add(i + 19);
+                                busyCells.Add(i + 20);
+                                busyCells.Add(i + 21);
+                                busyCells.Add(i + 29);
+                                busyCells.Add(i + 30);
+                                busyCells.Add(i + 31);
+                            }
+                            if (c[i + 29].IsContainsShip || c[i + 31].IsContainsShip)
+                                return false;
+                        }
+                        else
+                        {
+                            shipCount[1]--;
+                            busyCells.Add(i);
+                            busyCells.Add(i - 11);
+                            busyCells.Add(i - 10);
+                            busyCells.Add(i - 9);
+                            busyCells.Add(i - 1);
+                            busyCells.Add(i + 1);
+                            busyCells.Add(i + 9);
+                            busyCells.Add(i + 10);
+                            busyCells.Add(i + 11);
+                            busyCells.Add(i + 19);
+                            busyCells.Add(i + 20);
+                            busyCells.Add(i + 21);
+                        }
+                        if (c[i + 9].IsContainsShip || c[i + 11].IsContainsShip || c[i + 19].IsContainsShip || c[i + 21].IsContainsShip
+                            || c[i - 9].IsContainsShip || c[i - 10].IsContainsShip || c[i - 11].IsContainsShip)
+                            return false;
+                    }
+                    else
+                    {
+                        shipCount[0]--;
+                        busyCells.Add(i);
+                        busyCells.Add(i - 11);
+                        busyCells.Add(i - 10);
+                        busyCells.Add(i - 9);
+                        busyCells.Add(i - 1);
+                        busyCells.Add(i + 1);
+                        busyCells.Add(i + 9);
+                        busyCells.Add(i + 10);
+                        busyCells.Add(i + 11);
+                        if (c[i + 9].IsContainsShip || c[i + 11].IsContainsShip
+                            || c[i - 9].IsContainsShip || c[i - 10].IsContainsShip || c[i - 11].IsContainsShip)
+                            return false;
+                    }
+                }
+
+                for (int j = 0; j < shipCount.Length; j++)
+                    if (shipCount[j] < 0)
+                        return false;
+            }
+
+            for (int j = 0; j < shipCount.Length; j++)
+                if (shipCount[j] != 0)
+                    return false;
+
+            return true;
         }
     }
 }

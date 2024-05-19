@@ -46,8 +46,8 @@ namespace Server
                     .WithMany()
                     .OnDelete(DeleteBehavior.NoAction);
                 item.HasOne(item => item.ClientField)
-                   .WithMany()
-                   .OnDelete(DeleteBehavior.NoAction);
+                    .WithMany()
+                    .OnDelete(DeleteBehavior.NoAction);
             });
 
             builder.Entity<User>().HasIndex(u => u.Login).IsUnique();

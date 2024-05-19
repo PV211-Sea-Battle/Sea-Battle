@@ -34,7 +34,7 @@ namespace Sea_Battle.ViewModels
 
                 CurrentUser.game = response.Game;
 
-                // Построение защиты
+                CurrentUser.SwitchWindow<LobbyWindow>(window);
 
             }
             catch (Exception ex)

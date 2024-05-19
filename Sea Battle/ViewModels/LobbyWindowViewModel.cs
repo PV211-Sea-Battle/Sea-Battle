@@ -2,6 +2,7 @@
 using PropertyChanged;
 using Sea_Battle.Infrastructure;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Sea_Battle.ViewModels
@@ -30,40 +31,41 @@ namespace Sea_Battle.ViewModels
 
             CellCommand = new RelayCommand<int>(Cell, CanCell);
             ResetCommand = new RelayCommand(Reset);
-            ReadyCommand = new RelayCommand(Ready);
+            ReadyCommand = new RelayCommand(Ready, CanReady);
         }
 
         private async void Refresh()
         {
             while (cancellationTokenSource.IsCancellationRequested == false)
             {
-                // ReadyPlayers - готовые игроки
-                // Log - метод для логирования
-                if (!CurrentUser.user.IsReady)
-                    continue;
-
                 var request = new Request
                 {
                     Header = "ENEMY WAIT",
                     User = CurrentUser.user,
                     Game = CurrentUser.game
                 };
-                var responce = await CurrentUser.SendMessageAsync(request);
-                if (responce.ErrorMessage is not null)
+                try
                 {
-                    Log(responce.ErrorMessage);
-                    Ready();
-                    return;
+                    var responce = await CurrentUser.SendMessageAsync(request);
+                    if (responce.ErrorMessage is not null)
+                    {
+                        Log(responce.ErrorMessage);
+                        return;
+                    }
+                    if(responce.User.IsReady)
+                    {
+                        //тут можно сделать активной для хоста кнопку "начать", или что то в этом роде
+                    }
+                    else
+                    {
+                        //а тут сделать противоположное действие
+                    }
+                    await Task.Delay(100);
                 }
-                if(responce.User.IsReady)
+                catch (Exception ex)
                 {
-                    //тут можно сделать активной для хоста кнопку "начать", или что то в этом роде
+                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
-                else
-                {
-                    //а тут сделать противоположное действие
-                }
-                await Task.Delay(100);
             }
         }
 
@@ -80,24 +82,24 @@ namespace Sea_Battle.ViewModels
 
                 field[index] = false;
 
-                try
+                while ((index + 1) % 10 != 0 && field[index + 1])
                 {
-                    while (index % 9 != 0 && field[index + 1])
-                    {
-                        index++;
-                        size++;
-                        field[index] = false;
-                    }
+                    index++;
+                    size++;
+                    field[index] = false;
+                }
 
-                    while (field[index += 10])
-                    {
-                        size++;
-                        field[index] = false;
-                    }
+                while (index + 10 < field.Length && field[index + 10])
+                {
+                    index += 10;
+                    size++;
+                    field[index] = false;
+                }
 
+                if (size - 1 < Ships.Count)
+                {
                     Ships[size - 1]--;
                 }
-                catch { }
             }
         }
 
@@ -123,9 +125,6 @@ namespace Sea_Battle.ViewModels
 
         private async void Ready()
         {
-            // ReadyPlayers - готовые игроки
-            // Log - метод для логирования
-            // isReady - false, если игрок готов    //так и не понял зачем инвертировать его значение
             if(CurrentUser.user.IsReady)
             {
                 CurrentUser.user.IsReady = false;
@@ -133,22 +132,32 @@ namespace Sea_Battle.ViewModels
                 ReadyPlayers--;
                 return;
             }
-            var request = new Request
+            try
             {
-                Header = "READY",
-                Field = Field,
-                User = CurrentUser.user,
-                Game = CurrentUser.game
-            };
-            var responce = await CurrentUser.SendMessageAsync(request);
-            if(responce.ErrorMessage is not null)
-            {
-                Log(responce.ErrorMessage);
-                return;
+                var request = new Request
+                {
+                    Header = "READY",
+                    Field = Field,
+                    User = CurrentUser.user,
+                    Game = CurrentUser.game
+                };
+                var responce = await CurrentUser.SendMessageAsync(request);
+                if (responce.ErrorMessage is not null)
+                {
+                    Log(responce.ErrorMessage);
+                    return;
+                }
+                ReadyPlayers++;
+                CurrentUser.user.IsReady = true;
             }
-            ReadyPlayers++;
-            CurrentUser.user.IsReady = true;
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
+
+        private bool CanReady()
+            => Ships.Count(item => item == 0) == 4;
 
         private bool CanCell()
             => CurrentUser.user.IsReady == false;

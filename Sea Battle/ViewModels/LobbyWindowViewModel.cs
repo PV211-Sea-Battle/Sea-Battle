@@ -49,8 +49,8 @@ namespace Sea_Battle.ViewModels
                     var responce = await CurrentUser.SendMessageAsync(request);
                     if (responce.ErrorMessage is not null)
                     {
-                        Log(responce.ErrorMessage);
-                        return;
+                        MessageBox.Show(responce.ErrorMessage, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        continue;
                     }
                     if(responce.User.IsReady)
                     {
@@ -125,34 +125,36 @@ namespace Sea_Battle.ViewModels
 
         private async void Ready()
         {
-            if(CurrentUser.user.IsReady)
+            
+            var request = new Request
             {
-                CurrentUser.user.IsReady = false;
-                cancellationTokenSource.Cancel();
-                ReadyPlayers--;
-                return;
-            }
+                Header = "READY",
+                Field = Field,
+                User = CurrentUser.user,
+                Game = CurrentUser.game
+            };
             try
             {
-                var request = new Request
-                {
-                    Header = "READY",
-                    Field = Field,
-                    User = CurrentUser.user,
-                    Game = CurrentUser.game
-                };
                 var responce = await CurrentUser.SendMessageAsync(request);
                 if (responce.ErrorMessage is not null)
-                {
-                    Log(responce.ErrorMessage);
-                    return;
-                }
-                ReadyPlayers++;
-                CurrentUser.user.IsReady = true;
+                    throw new Exception(responce.ErrorMessage);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (CurrentUser.user.IsReady)
+            {
+                CurrentUser.user.IsReady = false;
+                ReadyPlayers--;
+                Log($"{CurrentUser.user} canceled his readiness.");
+            }
+            else
+            {
+                CurrentUser.user.IsReady = true;
+                ReadyPlayers++;
+                Log($"{CurrentUser.user} is ready.");
             }
         }
 

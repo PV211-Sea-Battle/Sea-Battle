@@ -183,6 +183,13 @@ namespace Server
                 return "Incorrect game ID";
             try
             {
+                if(user.IsReady)
+                {
+                    user.IsReady = false;
+                    _db.SaveChanges();
+                    return "SUCCESS";
+                }
+
                 if (!CheckField(field))
                     return "Incorrect ships placement";
 
@@ -229,9 +236,11 @@ namespace Server
             }
             catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message); return ex.Message; }
 
+            user.IsReady = true;
+            _db.SaveChanges();
             return "SUCCESS";
         }
-        public User EnemyWait(int gameId, int userId)
+        public (User, Game) EnemyWait(int gameId, int userId)
         {
             try { _db = new ServerDbContext(); }
             catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
@@ -242,16 +251,20 @@ namespace Server
                         where g.Id == gameId
                         select g).ToList().FirstOrDefault();
             if (user is null || game is null)
-                return null!;
+                return (null!, null!);
 
             if (user.Id == game.HostUserId)
                 userId = game.ClientUserId ?? -1;
             else
                 userId = game.HostUserId;
 
-            return (from u in _db.User
+            return ((from u in _db.User
                     where u.Id == userId
-                    select u).ToList().FirstOrDefault() ?? null!;
+                    select u).ToList().FirstOrDefault() ?? null!,
+                    (from g in _db.Game
+                     where g.Id == gameId
+                     select g).ToList().FirstOrDefault() ?? null!
+                    );
         }
 
 

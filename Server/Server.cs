@@ -240,14 +240,15 @@ namespace Server
                                         $"{request.Header} request. | UserId: {request.User.Id} | Status: {status} \n");
                                 break;
                             case "ENEMY WAIT":
-                                user = db.EnemyWait(request.Game.Id, request.User.Id);
+                                (User, Game)userGame = db.EnemyWait(request.Game.Id, request.User.Id);
                                 status = "FAILURE";
 
-                                if (user is not null)
+                                if (userGame is not (null, null))
                                 {
                                     var ewResponce = new Response()
                                     {
-                                        User = user
+                                        User = userGame.Item1,
+                                        Game = userGame.Item2
                                     };
                                     bf.Serialize(ns, ewResponce);
                                     status = "SUCCESS";

@@ -1,15 +1,9 @@
 ﻿using Models;
 using PropertyChanged;
 using Sea_Battle.Infrastructure;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Sea_Battle.Views;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Xml.Linq;
 
 namespace Sea_Battle.ViewModels
 {
@@ -18,21 +12,21 @@ namespace Sea_Battle.ViewModels
     {
         public string Name { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
-        public bool IsChecked { get; set; } = false;
+        public bool IsChecked { get; set; }
         public ICommand CreateCommand { get; }
         public ICommand CancelCommand { get; }
         public CreateWindowViewModel()
         {
-            CreateCommand = new RelayCommand<string>(Create, CanCreate);
-            CancelCommand = new RelayCommand(Cancel, CanCancel);
+            CreateCommand = new RelayCommand<Window>(Create, CanCreate);
+            CancelCommand = new RelayCommand<Window>(Cancel);
         }
-        public async void Create(string header)
+        public async void Create(Window window)
         {
             try
             {
                 var request = new Request()
                 {
-                    Header = header,
+                    Header = "CREATE",
                     User = CurrentUser.user,
                     Game = new Game
                     {
@@ -42,9 +36,11 @@ namespace Sea_Battle.ViewModels
                     }
                 };
 
-                await CurrentUser.SendMessageAsync(request);
-                //CurrentUser.SwitchWindow<PrepareWindow>(this);
+                Response response = await CurrentUser.SendMessageAsync(request);
 
+                CurrentUser.game = response.Game;
+
+                CurrentUser.SwitchWindow<LobbyWindow>(window);
             }
             catch (Exception ex)
             {
@@ -54,16 +50,11 @@ namespace Sea_Battle.ViewModels
                 Password = string.Empty;
             }
         }
-        public void Cancel()
-        {
-            //CurrentUser.SwitchWindow<MainMenuWindow>(this);
-        }
+        public void Cancel(Window window)
+            => CurrentUser.SwitchWindow<MainMenuWindow>(window);
         public bool CanCreate()
-        {
-            return !string.IsNullOrEmpty(Name) && ((!string.IsNullOrEmpty(Password) && IsChecked) || !IsChecked);
-        }
-        public bool CanCancel()
-            => true;
-
+            => string.IsNullOrEmpty(Name) == false
+            && (IsChecked == false
+            || string.IsNullOrEmpty(Password) == false);
     }
 }

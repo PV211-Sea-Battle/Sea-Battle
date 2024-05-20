@@ -6,7 +6,87 @@
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontSize" Value="14"/>
     </Style>
+    <Style x:Key="TextBlockDarkStyle" TargetType="TextBlock">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontSize" Value="15"/>
+    </Style>
+    <Style x:Key="ItemsControlDarkStyle" TargetType="ItemsControl">
+        <Setter Property="Background" Value="Black"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderBrush" Value="White"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="10"/>
+    </Style>
+    <Style x:Key="ListViewDarkStyle" TargetType="ListView">
+        <Setter Property="Background" Value="Black"/>
+        <Setter Property="SelectionMode" Value="Single"/>
+        <Style.Resources>
+            <Style TargetType="ListViewItem">
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListViewItem">
+                            <Border BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Background="{TemplateBinding Background}">
+                                <GridViewRowPresenter Margin="10"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="DimGray"/>
+                    </Trigger>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="DimGray"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <Style TargetType="GridViewColumnHeader">
+                <Setter Property="Background" Value="Black"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontSize" Value="20"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="BorderThickness" Value="0 0 0 1"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="GridViewColumnHeader">
+                            <Grid>
+                                <Border BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      Margin="0 10"/>
+                                </Border>
+                                <Thumb Name="PART_HeaderGripper"
+                                       HorizontalAlignment="Right"
+                                       Margin="0 0 -2 0"
+                                       Opacity="0"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="DimGray"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Style.Resources>
+    </Style>
     <Style x:Key="TextBoxDarkStyle" TargetType="TextBox">
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="Background" Value="Black"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    </Style>
+    <Style x:Key="PasswordBoxDarkStyle" TargetType="PasswordBox">
         <Setter Property="BorderThickness" Value="3"/>
         <Setter Property="Background" Value="Black"/>
         <Setter Property="Foreground" Value="White"/>
@@ -23,8 +103,8 @@
                     <Border BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Background="{TemplateBinding Background}">
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
@@ -42,38 +122,26 @@
     <Style x:Key="CheckBoxDarkStyle" TargetType="CheckBox">
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="Background" Value="Black"/>
-        <Setter Property="Padding" Value="5"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CheckBox">
-                    <Grid>
-                        <Border Background="{TemplateBinding Background}"
-                            Padding="{TemplateBinding Padding}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Border x:Name="CheckboxBorder"
-                                    Grid.Column="0"
-                                    Width="16"
-                                    Height="16"
-                                    Background="Black"
-                                    BorderBrush="White"
-                                    BorderThickness="1">
-                                    <Path x:Name="CrossMark"
-                                      Stroke="White"
-                                      StrokeThickness="2"
-                                      Data="M 0 0 L 16 16 M -1 15 L 15 -1"
-                                      Visibility="Collapsed"/>
-                                </Border>
-                                <ContentPresenter Grid.Column="1"
-                                              Margin="5 0 0 0"
-                                              VerticalAlignment="Center"
-                                              Content="{TemplateBinding Content}"/>
-                            </Grid>
+                    <DockPanel>
+                        <Border Width="16"
+                                Height="16"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Background="{TemplateBinding Background}">
+                            <Path Name="CrossMark"
+                                  Stroke="White"
+                                  StrokeThickness="2"
+                                  Data="M 2 2 L 12 12 M 2 12 L 12 2"
+                                  Visibility="Collapsed"/>
                         </Border>
-                    </Grid>
+                        <ContentPresenter Margin="5 0 0 0"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          Content="{TemplateBinding Content}"/>
+                    </DockPanel>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="CrossMark" Property="Visibility" Value="Visible"/>
@@ -82,11 +150,5 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>
-    <Style x:Key="PasswordBoxDarkStyle" TargetType="PasswordBox">
-        <Setter Property="BorderThickness" Value="3"/>
-        <Setter Property="Background" Value="Black"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="HorizontalContentAlignment" Value="Center"/>
     </Style>
 </ResourceDictionary>

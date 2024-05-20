@@ -3,74 +3,64 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:Sea_Battle.ViewModels"
-        xmlns:converters="clr-namespace:Sea_Battle.Converters"
+        xmlns:i="clr-namespace:Sea_Battle.Infrastructure"
         mc:Ignorable="d"
         Title="Create a game"
-        Height="380"
+        Height="400"
         Width="380"
         WindowStartupLocation="CenterScreen"
         Style="{StaticResource WindowDarkStyle}">
-    <Window.Resources>
-        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-    </Window.Resources>
-    <Window.DataContext>
-        <vm:CreateWindowViewModel/>
-    </Window.DataContext>
     <GroupBox Header="Create"
               Margin="10">
-        <DockPanel>
-            <Grid Margin="80 20">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Row="1"
-                           VerticalAlignment="Bottom"
-                           Text="Game/Lobby name:"
-                           Margin="5 20 5 0"/>
-                <TextBox Grid.Row="2"
-                         Style="{StaticResource TextBoxDarkStyle}"
-                         Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
-                <CheckBox Grid.Row="3"
-                          Style="{StaticResource CheckBoxDarkStyle}"
-                          Margin="-4 20 0 0"
-                          Content="Create a private game"
-                          IsChecked="{Binding IsChecked}"/>
-                <TextBlock Grid.Row="4"
-                           VerticalAlignment="Bottom"
-                           Text="Password:"
-                           Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}"
-                           Margin="5 10 0 0"/>
-                <TextBox Grid.Row="5"
-                         Style="{StaticResource TextBoxDarkStyle}"
-                         Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"
-                         Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                <Grid Grid.Row="6"
-                      Margin="5 30 5 0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <Button Height="50"
-                            Content="Create"
-                            Style="{StaticResource ButtonDarkStyle}"
-                            Margin="-5 0 5 0"
-                            Command="{Binding CreateCommand}"
-                            CommandParameter="CREATE"/>
-                    <Button Grid.Column="1"
-                            Height="50"
-                            Content="Cancel"
-                            Style="{StaticResource ButtonDarkStyle}"
-                            Margin="5 0 -5 0"
-                            Command="{Binding CancelCommand}"/>
-                </Grid>
+        <Grid Margin="80 30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TextBlock VerticalAlignment="Bottom"
+                       Text="Game/Lobby name:"
+                       Margin="5 15 0 5"/>
+            <TextBox Grid.Row="1"
+                     Style="{StaticResource TextBoxDarkStyle}"
+                     Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+            <CheckBox Grid.Row="2"
+                      Style="{StaticResource CheckBoxDarkStyle}"
+                      Margin="0 10 0 0"
+                      Content="Create a private game"
+                      IsChecked="{Binding IsChecked}"/>
+            <TextBlock Grid.Row="3"
+                       VerticalAlignment="Bottom"
+                       Text="Password:"
+                       Visibility="{Binding IsChecked, Converter={i:BoolToVisibilityConverter}}"
+                       Margin="5 15 0 5"/>
+            <TextBox Grid.Row="4"
+                     Style="{StaticResource TextBoxDarkStyle}"
+                     Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"
+                     Visibility="{Binding IsChecked, Converter={i:BoolToVisibilityConverter}}"/>
+            <Grid Grid.Row="5"
+                  Margin="0 30 0 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Button Height="50"
+                        Content="Create"
+                        Style="{StaticResource ButtonDarkStyle}"
+                        Margin="0 0 5 0"
+                        Command="{Binding CreateCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+                <Button Grid.Column="1"
+                        Height="50"
+                        Content="Cancel"
+                        Style="{StaticResource ButtonDarkStyle}"
+                        Margin="5 0 0 0"
+                        Command="{Binding CancelCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
             </Grid>
-        </DockPanel>
+        </Grid>
     </GroupBox>
 </Window>

@@ -12,12 +12,23 @@ namespace Sea_Battle
 
             DataContext = new ConnectWindowViewModel();
         }
-        private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is ConnectWindowViewModel viewModel)
+            if (sender is not CheckBox checkBox)
             {
-                viewModel.Password = (sender as PasswordBox).Password;
+                return;
             }
+
+            passwordBox.Visibility = checkBox.IsChecked
+                ?? true
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            textBox.Visibility = checkBox.IsChecked
+                ?? true
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
     }
 }

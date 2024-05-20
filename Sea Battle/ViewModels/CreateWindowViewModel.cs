@@ -39,8 +39,8 @@ namespace Sea_Battle.ViewModels
                 Response response = await CurrentUser.SendMessageAsync(request);
 
                 CurrentUser.game = response.Game;
-                
-                // Построение защиты
+
+                CurrentUser.SwitchWindow<LobbyWindow>(window);
             }
             catch (Exception ex)
             {

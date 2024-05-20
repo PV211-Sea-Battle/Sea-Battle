@@ -2,6 +2,7 @@
 using System.Net;
 using System.Runtime.Serialization.Formatters.Binary;
 using Models;
+using System.Runtime.Serialization;
 
 #pragma warning disable SYSLIB0011
 #pragma warning disable CS8600
@@ -45,7 +46,7 @@ namespace Server
             {
                 if(_isServerStarted)
                 {
-                    _ = Task.Factory.StartNew(() =>
+                    _ = Task.Run(() =>
                     {
                         while (Console.ReadKey(true).Key != ConsoleKey.End) ;
                         _isServerStarted = false;
@@ -217,13 +218,54 @@ namespace Server
                                 {
                                     var crResponce = new Response()
                                     {
-                                        ErrorMessage = "Failed to join the game:\nName was already taken or user does not exist"
+                                        ErrorMessage = "Failed to create the game:\nName was already taken or user does not exist"
                                     };
                                     bf.Serialize(ns, crResponce);
                                 }
 
                                 await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
                                     $"{request.Header} request. Login: {request.User.Login}. Room Name: {request.Game.Name} | Status: {status} \n");
+                                break;
+                            case "READY":
+                                status = db.Ready(request.Field, request.User.Id, request.Game.Id);
+                                var rdResponce = new Response();
+                                if (status != "SUCCESS")
+                                {
+                                    rdResponce.ErrorMessage = status;
+                                    status = "FAILURE";
+                                }
+                                bf.Serialize(ns, rdResponce);
+
+                                if (_isExtendedLogsEnabled)
+                                    await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}][EXT-LOG] " +
+                                        $"{request.Header} request. | UserId: {request.User.Id} | Status: {status} \n");
+                                break;
+                            case "ENEMY WAIT":
+                                Game Game = db.EnemyWait(request.Game.Id, request.User.Id);
+                                status = "FAILURE";
+
+                                if (Game is not null)
+                                {
+                                    var ewResponse = new Response()
+                                    {
+                                        Game = Game
+                                    };
+                                    bf.Serialize(ns, ewResponse);
+                                    status = "SUCCESS";
+                                }
+                                else
+                                {
+                                    var ewResponse = new Response()
+                                    {
+                                        ErrorMessage = "Error:\nInvalid user or game"
+                                    };
+                                    bf.Serialize(ns, ewResponse);
+                                }
+
+                                if (_isExtendedLogsEnabled)
+                                    await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}][EXT-LOG] " +
+                                        $"{request.Header} request. | GameId: {request.Game.Id} | " +
+                                        $"UserId: {request.User.Id} | Status: {status} \n");
                                 break;
                             default:
                                 var defaultResponse = new Response()
@@ -237,7 +279,9 @@ namespace Server
                         acceptor.Close();
                         ns.Close();
                     }
+                    catch (IOException) { }
                     catch (SocketException) { }
+                    catch (SerializationException) { }
                     catch (Exception ex)
                     {
                         Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message);

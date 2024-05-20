@@ -121,6 +121,7 @@ namespace Server
             try { _db = new ServerDbContext(); }
             catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
             Game? game = (from g in _db.Game
+                          .Include(item => item.HostUser)
                        where g.Id == gameId
                        select g).ToList().FirstOrDefault();
             User? user = (from u in _db.User
@@ -240,31 +241,22 @@ namespace Server
             _db.SaveChanges();
             return "SUCCESS";
         }
-        public (User, Game) EnemyWait(int gameId, int userId)
+        public Game EnemyWait(int gameId, int userId)
         {
             try { _db = new ServerDbContext(); }
             catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
             var user = (from u in _db.User
                         where u.Id == userId
-                        select u).ToList().FirstOrDefault();
+                        select u).FirstOrDefault();
             var game = (from g in _db.Game
+                        .Include(item => item.HostUser)
+                        .Include(item => item.ClientUser)
                         where g.Id == gameId
-                        select g).ToList().FirstOrDefault();
+                        select g).FirstOrDefault();
             if (user is null || game is null)
-                return (null!, null!);
+                return null!;
 
-            if (user.Id == game.HostUserId)
-                userId = game.ClientUserId ?? -1;
-            else
-                userId = game.HostUserId;
-
-            return ((from u in _db.User
-                    where u.Id == userId
-                    select u).ToList().FirstOrDefault() ?? null!,
-                    (from g in _db.Game
-                     where g.Id == gameId
-                     select g).ToList().FirstOrDefault() ?? null!
-                    );
+            return game;
         }
 
 

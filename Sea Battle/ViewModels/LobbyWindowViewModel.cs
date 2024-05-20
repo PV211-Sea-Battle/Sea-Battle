@@ -38,28 +38,48 @@ namespace Sea_Battle.ViewModels
         {
             while (cancellationTokenSource.IsCancellationRequested == false)
             {
-                var request = new Request
-                {
-                    Header = "ENEMY WAIT",
-                    User = CurrentUser.user,
-                    Game = CurrentUser.game
-                };
                 try
                 {
-                    var responce = await CurrentUser.SendMessageAsync(request);
-                    if (responce.ErrorMessage is not null)
+                    Request request = new()
                     {
-                        MessageBox.Show(responce.ErrorMessage, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        continue;
-                    }
-                    if(responce.User.IsReady)
+                        Header = "ENEMY WAIT",
+                        User = CurrentUser.user,
+                        Game = CurrentUser.game
+                    };
+
+                    Response response = await CurrentUser.SendMessageAsync(request);
+
+                    if (response.Game?.ClientUser is User client)
                     {
-                        //тут можно сделать активной для хоста кнопку "начать", или что то в этом роде
+                        if (CurrentUser.user?.Login == client.Login)
+                        {
+                            if (CurrentUser.game?.HostUser.IsReady != response.Game.HostUser.IsReady)
+                            {
+                                ReadyPlayers += response.Game.HostUser.IsReady ? 1 : -1;
+                                Log($"{response.Game.HostUser} is{(response.Game.HostUser.IsReady ? "" : " not")} Ready");
+                            }
+                        }
+                        else
+                        {
+                            if (CurrentUser.game?.ClientUser is null)
+                            {
+                                Log($"{response.Game.ClientUser} Connected");
+                            }
+                            else if (CurrentUser.game.ClientUser.IsReady != client.IsReady)
+                            {
+                                ReadyPlayers += client.IsReady ? 1 : -1;
+                                Log($"{client.Login} is{(client.IsReady ? "" : " not")} Ready");
+                            }
+                        }
                     }
-                    else
+
+                    if (ReadyPlayers == 2)
                     {
-                        //а тут сделать противоположное действие
+                        // Окно матча
                     }
+
+                    CurrentUser.game = response.Game;
+
                     await Task.Delay(100);
                 }
                 catch (Exception ex)
@@ -104,7 +124,10 @@ namespace Sea_Battle.ViewModels
         }
 
         private void Log(string message) 
-            => LogList.Add($"{DateTime.Now.ToShortTimeString()} : {message}");
+            => Application.Current.Dispatcher.Invoke(() =>
+            {
+                LogList.Add($"{DateTime.Now.ToShortTimeString()} : {message}");
+            });
 
         private void Cell(int index)
         {
@@ -125,36 +148,35 @@ namespace Sea_Battle.ViewModels
 
         private async void Ready()
         {
-            
-            var request = new Request
-            {
-                Header = "READY",
-                Field = Field,
-                User = CurrentUser.user,
-                Game = CurrentUser.game
-            };
             try
             {
-                var responce = await CurrentUser.SendMessageAsync(request);
-                if (responce.ErrorMessage is not null)
-                    throw new Exception(responce.ErrorMessage);
+                Request request = new()
+                {
+                    Header = "READY",
+                    Field = Field,
+                    User = CurrentUser.user,
+                    Game = CurrentUser.game
+                };
+
+                await CurrentUser.SendMessageAsync(request);
+
+                if (CurrentUser.user.IsReady)
+                {
+                    CurrentUser.user.IsReady = false;
+                    ReadyPlayers--;
+                    Log($"{CurrentUser.user} is not Ready");
+                }
+                else
+                {
+                    CurrentUser.user.IsReady = true;
+                    ReadyPlayers++;
+                    Log($"{CurrentUser.user} is Ready.");
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
-            }
-            if (CurrentUser.user.IsReady)
-            {
-                CurrentUser.user.IsReady = false;
-                ReadyPlayers--;
-                Log($"{CurrentUser.user} canceled his readiness.");
-            }
-            else
-            {
-                CurrentUser.user.IsReady = true;
-                ReadyPlayers++;
-                Log($"{CurrentUser.user} is ready.");
             }
         }
 

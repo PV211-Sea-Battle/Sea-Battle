@@ -2,6 +2,7 @@
 using System.Net;
 using System.Runtime.Serialization.Formatters.Binary;
 using Models;
+using System.Runtime.Serialization;
 
 #pragma warning disable SYSLIB0011
 #pragma warning disable CS8600
@@ -45,7 +46,7 @@ namespace Server
             {
                 if(_isServerStarted)
                 {
-                    _ = Task.Factory.StartNew(() =>
+                    _ = Task.Run(() =>
                     {
                         while (Console.ReadKey(true).Key != ConsoleKey.End) ;
                         _isServerStarted = false;
@@ -240,26 +241,25 @@ namespace Server
                                         $"{request.Header} request. | UserId: {request.User.Id} | Status: {status} \n");
                                 break;
                             case "ENEMY WAIT":
-                                (User, Game)userGame = db.EnemyWait(request.Game.Id, request.User.Id);
+                                Game Game = db.EnemyWait(request.Game.Id, request.User.Id);
                                 status = "FAILURE";
 
-                                if (userGame is not (null, null))
+                                if (Game is not null)
                                 {
-                                    var ewResponce = new Response()
+                                    var ewResponse = new Response()
                                     {
-                                        User = userGame.Item1,
-                                        Game = userGame.Item2
+                                        Game = Game
                                     };
-                                    bf.Serialize(ns, ewResponce);
+                                    bf.Serialize(ns, ewResponse);
                                     status = "SUCCESS";
                                 }
                                 else
                                 {
-                                    var ewResponce = new Response()
+                                    var ewResponse = new Response()
                                     {
                                         ErrorMessage = "Error:\nInvalid user or game"
                                     };
-                                    bf.Serialize(ns, ewResponce);
+                                    bf.Serialize(ns, ewResponse);
                                 }
 
                                 if (_isExtendedLogsEnabled)
@@ -279,7 +279,9 @@ namespace Server
                         acceptor.Close();
                         ns.Close();
                     }
+                    catch (IOException) { }
                     catch (SocketException) { }
+                    catch (SerializationException) { }
                     catch (Exception ex)
                     {
                         Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message);

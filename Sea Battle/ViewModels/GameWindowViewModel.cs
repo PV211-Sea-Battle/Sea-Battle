@@ -61,14 +61,9 @@ namespace Sea_Battle.ViewModels
                         OpponentField = response.Game.HostField;
                     }
 
-                    if(response.User.IsWinner == true && response.User.Login == CurrentUser.user.Login)
+                    if (response.Game.Winner is not null)
                     {
-                        CurrentUser.user.IsWinner = true;
                         //окно результатов (победа)
-                    }
-                    if (response.User.IsWinner == true && response.User.Login != CurrentUser.user.Login)
-                    {
-                        //окно резуьтатов (поражение)
                     }
 
                     await Task.Delay(100);

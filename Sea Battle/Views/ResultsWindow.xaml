@@ -8,8 +8,7 @@
         Height="1050"
         Width="600"
         WindowStartupLocation="CenterScreen"
-        Style="{StaticResource WindowDarkStyle}"
-        Closed="Window_Closed">
+        Style="{StaticResource WindowDarkStyle}">
     <GroupBox Header="Results"
               Margin="10">
         <Grid Margin="40 30">
@@ -17,40 +16,24 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
             </Grid.RowDefinitions>
             <Image Source="{Binding ImagePath}"
                    Width="220"
                    Height="240"
                    Stretch="Fill"/>
-            <Grid Grid.Row="1"
-                  Margin="0 100 0 0">
-                <Button Height="100"
-                        FontSize="25"
-                        Content="{Binding ReadyPlayers}"
-                        Style="{StaticResource ButtonDarkStyle}"
-                        Margin="0 0 0 0"
-                        Command="{Binding RematchCommand}"
-                        ContentStringFormat="Rematch ({0}/2)"
-                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
-            </Grid>
-            <Grid Grid.Row="2"
-                  Margin="0 50 0 0">
-                <Button Height="100"
-                        FontSize="25"
-                        Content="Back to Main Menu"
-                        Style="{StaticResource ButtonDarkStyle}"
-                        Margin="0 0 0 0"
-                        Command="{Binding BackCommand}"
-                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
-            </Grid>
-            <Grid Grid.Row="3"
-                Margin="0 50 0 0">
-                <ItemsControl
-                Margin="0 0 0 -250"
-                ItemsSource="{Binding LogList}"
-                Style="{StaticResource ItemsControlDarkStyle}"/>
-            </Grid>
+            <Button Grid.Row="2"
+                    Height="100"
+                    FontSize="25"
+                    Content="Back to Main Menu"
+                    Style="{StaticResource ButtonDarkStyle}"
+                    Margin="0 50 0 0"
+                    Command="{Binding BackCommand}"
+                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+            <ItemsControl Grid.Row="3"
+                          Margin="0 50 0 0"
+                          ItemsSource="{Binding LogList}"
+                          Style="{StaticResource ItemsControlDarkStyle}"/>
         </Grid>
     </GroupBox>
 </Window>

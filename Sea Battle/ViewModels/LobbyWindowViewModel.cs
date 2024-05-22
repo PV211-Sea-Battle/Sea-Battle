@@ -8,7 +8,7 @@ using System.Windows.Input;
 namespace Sea_Battle.ViewModels
 {
     [AddINotifyPropertyChangedInterface]
-    internal class LobbyWindowViewModel
+    class LobbyWindowViewModel
     {
         public readonly CancellationTokenSource cancellationTokenSource = new();
         public Field Field { get; set; } = new() { Cells = new Cell[100].ToList() };

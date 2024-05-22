@@ -8,6 +8,7 @@
         public string Password { get; set; } = null!;
         public bool IsReady { get; set; } = false;
         public bool IsWinner { get; set; } = false;
+        public bool IsTurn { get; set; } = false;
         public override string ToString() => Login;
     }
 }

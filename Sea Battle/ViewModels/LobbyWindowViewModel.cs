@@ -1,6 +1,7 @@
 ﻿using Models;
 using PropertyChanged;
 using Sea_Battle.Infrastructure;
+using Sea_Battle.Views;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
@@ -10,6 +11,7 @@ namespace Sea_Battle.ViewModels
     [AddINotifyPropertyChangedInterface]
     class LobbyWindowViewModel
     {
+        private readonly Window window;
         public readonly CancellationTokenSource cancellationTokenSource = new();
         public Field Field { get; set; } = new() { Cells = new Cell[100].ToList() };
         public ObservableCollection<int> Ships { get; set; } = [4, 3, 2, 1];
@@ -18,8 +20,10 @@ namespace Sea_Battle.ViewModels
         public ICommand CellCommand { get; set; }
         public ICommand ResetCommand { get; set; }
         public ICommand ReadyCommand { get; set; }
-        public LobbyWindowViewModel()
+        public LobbyWindowViewModel(Window window)
         {
+            this.window = window;
+
             Task.Run(Refresh);
 
             Log($"{CurrentUser.user} Connected");
@@ -73,12 +77,17 @@ namespace Sea_Battle.ViewModels
                         }
                     }
 
+                    CurrentUser.game = response.Game;
+
                     if (ReadyPlayers == 2)
                     {
-                        // Окно матча
-                    }
+                        CurrentUser.user.IsTurn = CurrentUser.user.Login == CurrentUser.game.HostUser.Login;
 
-                    CurrentUser.game = response.Game;
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            CurrentUser.SwitchWindow<GameWindow>(window);
+                        });
+                    }
 
                     await Task.Delay(100);
                 }

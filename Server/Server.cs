@@ -303,7 +303,7 @@ namespace Server
                     catch (SerializationException) { }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message);
+                        Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.ToString());
                         return;
                     }
                 }
@@ -312,7 +312,7 @@ namespace Server
                     string? choice;
                     do
                     {
-                        Console.Write("Avaivable commands:" +
+                        Console.Write("Available commands:" +
                         "\n'START' - Start the server." +
                         $"\n'EDIT' - Edit address file. Current address is {ipAddress}:{port}" +
                         "\n'VIEWDB' - View first 5 rows of every table in database." +

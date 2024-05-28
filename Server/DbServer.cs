@@ -6,6 +6,7 @@ namespace Server
     public class DbServer
     {
         private ServerDbContext _db = null!;
+        private int shipsDestroyed = 0;
         public void ShowFirst5RowsOfEveryTable()
         {
             try { _db = new ServerDbContext(); }
@@ -272,28 +273,44 @@ namespace Server
             if (user is null || game is null)
                 return null!;
 
+            int destroyedShipsHost = 0;
+            int destroyedShipsClient = 0;
+
             if (game.ClientUser is not null && game.HostUser.IsReady && game.ClientUser.IsReady)
             {
                 if (user.Login == game.HostUser.Login)
                 {
-                    for (int x = 0; x < game.ClientField.Cells.Count; x++)
+                    for (int x = 0; x < game.ClientField?.Cells.Count; x++)
                     {
                         if (game.ClientField.Cells[x].IsHit == false)
                         {
                             game.ClientField.Cells[x].IsContainsShip = false;
                         }
+                        if(game.ClientField.Cells[x].IsHit && game.ClientField.Cells[x].IsContainsShip)
+                        {
+                            destroyedShipsHost++;
+                        }
                     }
                 }
                 else
                 {
-                    for (int x = 0; x < game.HostField.Cells.Count; x++)
+                    for (int x = 0; x < game.HostField?.Cells.Count; x++)
                     {
                         if (game.HostField.Cells[x].IsHit == false)
                         {
                             game.HostField.Cells[x].IsContainsShip = false;
                         }
+                        if (game.HostField.Cells[x].IsHit && game.HostField.Cells[x].IsContainsShip)
+                        {
+                            destroyedShipsClient++;
+                        }
                     }
                 }
+            }
+            
+            if((destroyedShipsHost == 20 && user.Login == game.HostUser.Login) || (destroyedShipsClient == 20 && user.Login == game.ClientUser?.Login))
+            {
+                game.Winner = user;
             }
 
             return game;
@@ -314,7 +331,7 @@ namespace Server
 
                 if (cell is null || game is null || user is null)
                 {
-                    return "cell or game or user in null";
+                    return "cell or game or user is null";
                 }
 
                 if (user.IsTurn == false)
@@ -324,8 +341,30 @@ namespace Server
 
                 cell.IsHit = true;
 
-                game.HostUser.IsTurn = user.Login != game.HostUser.Login;
-                game.ClientUser.IsTurn = user.Login == game.HostUser.Login;
+                if (cell.IsContainsShip)
+                {
+                    game.HostUser.IsTurn = user.Login == game.HostUser.Login;
+                    game.ClientUser.IsTurn = user.Login == game.ClientUser.Login;
+
+                    List<Cell> shipCells = new List<Cell> { cell };
+
+                    CheckNeighboringCellsForShips(context, cell, shipCells);
+
+                    bool allShipCellsHit = shipCells.All(c => c.IsHit);
+
+                    if (allShipCellsHit)
+                    {                        
+                        foreach (var shipCell in shipCells)
+                        {
+                            MarkAllNeighborsAsHit(context, shipCell);
+                        }
+                    }
+                }
+                else
+                {
+                    game.HostUser.IsTurn = user.Login != game.HostUser.Login;
+                    game.ClientUser.IsTurn = user.Login == game.HostUser.Login;
+                }
 
                 await context.SaveChangesAsync();
 
@@ -335,6 +374,64 @@ namespace Server
             {
                 return ex.Message;
             }
+        }
+
+        private static void CheckNeighboringCellsForShips(ServerDbContext context, Cell cell, List<Cell> shipCells)
+        {
+            var directions = new (int dx, int dy)[]
+            {
+        (1, 0),  // right
+        (-1, 0), // left
+        (0, 1),  // down
+        (0, -1), // up
+        (1, 1),  // down-right
+        (-1, 1), // down-left
+        (1, -1), // up-right
+        (-1, -1) // up-left
+            };
+
+            foreach (var (dx, dy) in directions)
+            {
+                Cell? neighbor = GetNeighboringCell(context, cell, dx, dy);
+                if (neighbor != null && neighbor.IsContainsShip && !shipCells.Contains(neighbor) && !(cell.Id % 10 == 1 && neighbor.Id % 10 == 0) && !(cell.Id % 10 == 0 && neighbor.Id % 10 == 1))
+                {
+                    shipCells.Add(neighbor);
+
+                    CheckNeighboringCellsForShips(context, neighbor, shipCells);
+                }
+            }
+        }
+
+        private static void MarkAllNeighborsAsHit(ServerDbContext context, Cell cell)
+        {
+            var directions = new (int dx, int dy)[]
+            {
+        (1, 0),  // right
+        (-1, 0), // left
+        (0, 1),  // down
+        (0, -1), // up
+        (1, 1),  // down-right
+        (-1, 1), // down-left
+        (1, -1), // up-right
+        (-1, -1) // up-left
+            };
+
+            foreach (var (dx, dy) in directions)
+            {
+                Cell? neighbor = GetNeighboringCell(context, cell, dx, dy);
+                if (neighbor != null && !neighbor.IsContainsShip && !(cell.Id % 10 == 1 && neighbor.Id % 10 == 0) && !(cell.Id % 10 == 0 && neighbor.Id % 10 == 1))
+                {
+                    neighbor.IsHit = true;
+                }
+            }
+        }
+
+        private static Cell? GetNeighboringCell(ServerDbContext context, Cell cell, int dx, int dy)
+        {
+            int x = cell.Id % 10 + dx; 
+            int y = cell.Id / 10 + dy; 
+
+            return context.Cell.FirstOrDefault(c => c.FieldId == cell.FieldId && (c.Id % 10 == x) && (c.Id / 10 == y));
         }
 
         //оптимизация? не, не слышал

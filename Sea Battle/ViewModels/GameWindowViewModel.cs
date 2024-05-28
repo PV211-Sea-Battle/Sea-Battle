@@ -3,19 +3,23 @@ using Models;
 using System.Windows;
 using System.Windows.Input;
 using Sea_Battle.Infrastructure;
+using Sea_Battle.Views;
 
 namespace Sea_Battle.ViewModels
 {
     [AddINotifyPropertyChangedInterface]
     class GameWindowViewModel
     {
+        private readonly Window window;
         public readonly CancellationTokenSource cancellationTokenSource = new();
         public Field CurrentUserField { get; set; }
         public Field OpponentField { get; set; }
         public ICommand ShootCommand { get; set; }
 
-        public GameWindowViewModel()
+        public GameWindowViewModel(Window window)
         {
+            this.window = window;
+
             if (CurrentUser.game.HostUser.Login == CurrentUser.user.Login)
             {
                 CurrentUserField = CurrentUser.game.HostField;
@@ -46,41 +50,45 @@ namespace Sea_Battle.ViewModels
 
                     Response response = await CurrentUser.SendMessageAsync(request);
 
-                    if (response.Game.HostUser.Login == CurrentUser.user.Login)
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
-                        CurrentUserField = response.Game.HostField;
-                        OpponentField = response.Game.ClientField;
-                    }
-                    else
-                    {
-                        CurrentUserField = response.Game.ClientField;
-                        OpponentField = response.Game.HostField;
-                    }
+                        if (response.Game.HostUser.Login == CurrentUser.user.Login)
+                        {
+                            CurrentUserField = response.Game.HostField;
+                            OpponentField = response.Game.ClientField;
+                        }
+                        else
+                        {
+                            CurrentUserField = response.Game.ClientField;
+                            OpponentField = response.Game.HostField;
+                        }
 
-                    if (response.Game.HostUser.Login == CurrentUser.user.Login)
-                    {
-                        CurrentUser.user = response.Game.HostUser;
-                    }
-                    else
-                    {
-                        CurrentUser.user = response.Game.ClientUser;
-                    }
+                        if (response.Game.HostUser.Login == CurrentUser.user.Login)
+                        {
+                            CurrentUser.user = response.Game.HostUser;
+                        }
+                        else
+                        {
+                            CurrentUser.user = response.Game.ClientUser;
+                        }
 
-                    CurrentUser.game = response.Game;
+                        CurrentUser.game = response.Game;
 
-                    if (response.Game.Winner is not null)
-                    {
-                        //окно результатов
-                    }
+                        if (response.Game.Winner is not null)
+                        {
+                            CurrentUser.SwitchWindow<ResultsWindow>(window);
+                        }
+                    });
 
                     await Task.Delay(100);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
         }
+
         private async void Shoot(int index)
         {
             try

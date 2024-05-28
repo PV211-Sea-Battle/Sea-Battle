@@ -131,6 +131,8 @@ namespace Server
                 return null!;
             game.ClientUserId = user.Id;
             _db.SaveChanges();
+
+            game.HostUser.IsReady = false;
             return game;
         }
 
@@ -176,6 +178,8 @@ namespace Server
                         where u.Id == userId
                         select u).ToList().FirstOrDefault();
             var game = (from g in _db.Game
+                        .Include(item => item.HostUser)
+                        .Include(item => item.ClientUser)
                         where g.Id == gameId
                         select g).ToList().FirstOrDefault();
             if (user is null)
@@ -238,6 +242,13 @@ namespace Server
             catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message); return ex.Message; }
 
             user.IsReady = true;
+
+            if (game.ClientUser is not null && game.HostUser.IsReady && game.ClientUser.IsReady)
+            {
+                game.HostUser.IsTurn = true;
+                game.ClientUser.IsTurn = false;
+            }
+
             _db.SaveChanges();
             return "SUCCESS";
         }
@@ -251,14 +262,80 @@ namespace Server
             var game = (from g in _db.Game
                         .Include(item => item.HostUser)
                         .Include(item => item.ClientUser)
+                        .Include(item => item.HostField)
+                            .ThenInclude(item => item.Cells)
+                        .Include(item => item.ClientField)
+                            .ThenInclude(item => item.Cells)
+                        .Include(item => item.Winner)
                         where g.Id == gameId
                         select g).FirstOrDefault();
             if (user is null || game is null)
                 return null!;
 
+            if (game.ClientUser is not null && game.HostUser.IsReady && game.ClientUser.IsReady)
+            {
+                if (user.Login == game.HostUser.Login)
+                {
+                    for (int x = 0; x < game.ClientField.Cells.Count; x++)
+                    {
+                        if (game.ClientField.Cells[x].IsHit == false)
+                        {
+                            game.ClientField.Cells[x].IsContainsShip = false;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int x = 0; x < game.HostField.Cells.Count; x++)
+                    {
+                        if (game.HostField.Cells[x].IsHit == false)
+                        {
+                            game.HostField.Cells[x].IsContainsShip = false;
+                        }
+                    }
+                }
+            }
+
             return game;
         }
 
+        public static async Task<string?> Shoot(int cellId, int gameId, int userId)
+        {
+            try
+            {
+                await using ServerDbContext context = new();
+
+                Cell? cell = context.Cell.FirstOrDefault(item => item.Id == cellId);
+                Game? game = context.Game
+                    .Include(item => item.HostUser)
+                    .Include(item => item.ClientUser)
+                    .FirstOrDefault(item => item.Id == gameId);
+                User? user = context.User.FirstOrDefault(item => item.Id == userId);
+
+                if (cell is null || game is null || user is null)
+                {
+                    return "cell or game or user in null";
+                }
+
+                if (user.IsTurn == false)
+                {
+                    return "not your turn";
+                }
+
+                cell.IsHit = true;
+
+                game.HostUser.IsTurn = user.Login != game.HostUser.Login;
+                game.ClientUser.IsTurn = user.Login == game.HostUser.Login;
+
+                await context.SaveChangesAsync();
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
 
         //оптимизация? не, не слышал
         private static bool CheckField(Field field)

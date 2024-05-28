@@ -10,7 +10,5 @@ namespace Sea_Battle
             InitializeComponent();
             DataContext = new ResultsWindowViewModel();
         }
-        private void Window_Closed(object sender, EventArgs e)
-            => ((ResultsWindowViewModel)DataContext).cancellationTokenSource.Cancel();
     }
 }

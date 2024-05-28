@@ -1,13 +1,7 @@
 ﻿using PropertyChanged;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Models;
 using System.Windows;
 using System.Windows.Input;
-using System.Reflection;
 using Sea_Battle.Infrastructure;
 
 namespace Sea_Battle.ViewModels
@@ -16,12 +10,23 @@ namespace Sea_Battle.ViewModels
     class GameWindowViewModel
     {
         public readonly CancellationTokenSource cancellationTokenSource = new();
-        public Field CurrentUserField { get; set; } = new() { Cells = new Cell[100].ToList() };
-        public Field OpponentField { get; set; } = new() { Cells = new Cell[100].ToList() };
+        public Field CurrentUserField { get; set; }
+        public Field OpponentField { get; set; }
         public ICommand ShootCommand { get; set; }
 
         public GameWindowViewModel()
         {
+            if (CurrentUser.game.HostUser.Login == CurrentUser.user.Login)
+            {
+                CurrentUserField = CurrentUser.game.HostField;
+                OpponentField = CurrentUser.game.ClientField;
+            }
+            else
+            {
+                CurrentUserField = CurrentUser.game.ClientField;
+                OpponentField = CurrentUser.game.HostField;
+            }
+
             Task.Run(Refresh);
 
             ShootCommand = new RelayCommand<int>(Shoot, CanShoot);
@@ -34,23 +39,14 @@ namespace Sea_Battle.ViewModels
                 {
                     Request request = new()
                     {
-                        Header = "GAME",
+                        Header = "ENEMY WAIT",
                         User = CurrentUser.user,
                         Game = CurrentUser.game
                     };
 
                     Response response = await CurrentUser.SendMessageAsync(request);
 
-                    if(response.User.Login == CurrentUser.user.Login)
-                    {
-                        CurrentUser.user.IsTurn = true;
-                    }
-                    else
-                    {
-                        CurrentUser.user.IsTurn = false;
-                    }
-
-                    if(response.Game.HostUser.Login == CurrentUser.user.Login)
+                    if (response.Game.HostUser.Login == CurrentUser.user.Login)
                     {
                         CurrentUserField = response.Game.HostField;
                         OpponentField = response.Game.ClientField;
@@ -61,14 +57,20 @@ namespace Sea_Battle.ViewModels
                         OpponentField = response.Game.HostField;
                     }
 
-                    if(response.User.IsWinner == true && response.User.Login == CurrentUser.user.Login)
+                    if (response.Game.HostUser.Login == CurrentUser.user.Login)
                     {
-                        CurrentUser.user.IsWinner = true;
-                        //окно результатов (победа)
+                        CurrentUser.user = response.Game.HostUser;
                     }
-                    if (response.User.IsWinner == true && response.User.Login != CurrentUser.user.Login)
+                    else
                     {
-                        //окно резуьтатов (поражение)
+                        CurrentUser.user = response.Game.ClientUser;
+                    }
+
+                    CurrentUser.game = response.Game;
+
+                    if (response.Game.Winner is not null)
+                    {
+                        //окно результатов
                     }
 
                     await Task.Delay(100);
@@ -81,21 +83,19 @@ namespace Sea_Battle.ViewModels
         }
         private async void Shoot(int index)
         {
-            OpponentField.Cells[index].IsVisible ^= true;
             try
             {
                 Request request = new()
                 {
                     Header = "SHOOT",
-                    Field = OpponentField,
+                    Cell = OpponentField.Cells[index],
                     User = CurrentUser.user,
                     Game = CurrentUser.game
                 };
 
-                Response response = await CurrentUser.SendMessageAsync(request);
+                await CurrentUser.SendMessageAsync(request);
 
-                //работа с этой клеткой: ее смена и прочее
-
+                CurrentUser.user.IsTurn = false;
             }
             catch (Exception ex)
             {
@@ -104,6 +104,6 @@ namespace Sea_Battle.ViewModels
             }
         }
         private bool CanShoot()
-            => CurrentUser.user.IsTurn == true;
+            => CurrentUser.user.IsTurn;
     }
 }

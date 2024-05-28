@@ -14,7 +14,7 @@ namespace Sea_Battle.Views
         {
             InitializeComponent();
 
-            DataContext = new LobbyWindowViewModel();
+            DataContext = new LobbyWindowViewModel(this);
 
             for (int x = 0; x < 10; x++)
             {

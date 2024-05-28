@@ -267,6 +267,25 @@ namespace Server
                                         $"{request.Header} request. | GameId: {request.Game.Id} | " +
                                         $"UserId: {request.User.Id} | Status: {status} \n");
                                 break;
+                            case "SHOOT":
+                                string? error = await DbServer.Shoot(request.Cell.Id, request.Game.Id, request.User.Id);
+                                status = "SUCCESS";
+
+                                if (error is not null)
+                                {
+                                    status = "FAILURE";
+                                }
+
+                                Response sresponse = new()
+                                {
+                                    ErrorMessage = error
+                                };
+                                bf.Serialize(ns, sresponse);
+
+                                await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
+                                        $"{request.Header} request. | GameId: {request.Game.Id} | " +
+                                        $"UserId: {request.User.Id} | Status: {status} \n");
+                                break;
                             default:
                                 var defaultResponse = new Response()
                                 {

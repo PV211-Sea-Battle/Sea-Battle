@@ -1,28 +1,19 @@
 ﻿using Sea_Battle.Infrastructure;
 using Sea_Battle.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Sea_Battle
+namespace Sea_Battle.Views
 {
     public partial class GameWindow : Window
     {
-        
         public GameWindow()
         {
             InitializeComponent();
+
             DataContext = new GameWindowViewModel();
 
             for (int x = 0; x < 10; x++)
@@ -39,46 +30,44 @@ namespace Sea_Battle
 
                 for (int y = 0; y < 10; y++)
                 {
-                    Button button;
-                    if(((GameWindowViewModel)DataContext).CurrentUserField.Cells[10 * x + y].IsContainsShip)
-                    {
-                        button = CreateButton(1);
-                    }
-                    else
-                    {
-                        button = CreateButton(2);
-                    }
-
+                    Button button = CreateButton();
                     button.IsEnabled = false;
+                    int buttonPosition = 10 * x + y;
+
+                    Binding shipBinding = new($"CurrentUserField.Cells[{buttonPosition}].IsContainsShip")
+                    {
+                        Converter = new BoolToVisibilityConverter()
+                    };
+                    Binding hitBinding = new($"CurrentUserField.Cells[{buttonPosition}].IsHit")
+                    {
+                        Converter = new BoolToVisibilityConverter()
+                    };
+
+                    ((Border)((Grid)button.Content).Children[0]).SetBinding(VisibilityProperty, shipBinding);
+                    ((Path)((Grid)button.Content).Children[1]).SetBinding(VisibilityProperty, hitBinding);
+
                     u_field.Children.Add(button);
                 }
 
                 for (int y = 0; y < 10; y++)
                 {
-                    Button button;
+                    Button button = CreateButton();
                     int buttonPosition = 10 * x + y;
-
-                    if (((GameWindowViewModel)DataContext).OpponentField.Cells[buttonPosition].IsContainsShip)
-                    {
-                        button = CreateButton(1);
-                    }
-                    else if(((GameWindowViewModel)DataContext).OpponentField.Cells[buttonPosition].IsHit)
-                    {
-                        button = CreateButton(2);
-                    }
-                    else
-                    {
-                        button = CreateButton(3);
-                    }
 
                     button.Command = ((GameWindowViewModel)DataContext).ShootCommand;
                     button.CommandParameter = buttonPosition;
 
-                    Binding visibleBinding = new($"OpponentField.Cells[{buttonPosition}].IsVisible")
+                    Binding shipBinding = new($"OpponentField.Cells[{buttonPosition}].IsContainsShip")
                     {
                         Converter = new BoolToVisibilityConverter()
                     };
-                    ((Border)button.Content).SetBinding(VisibilityProperty, visibleBinding);
+                    Binding hitBinding = new($"OpponentField.Cells[{buttonPosition}].IsHit")
+                    {
+                        Converter = new BoolToVisibilityConverter()
+                    };
+
+                    ((Border)((Grid)button.Content).Children[0]).SetBinding(VisibilityProperty, shipBinding);
+                    ((Path)((Grid)button.Content).Children[1]).SetBinding(VisibilityProperty, hitBinding);
 
                     o_field.Children.Add(button);
                 }
@@ -97,47 +86,37 @@ namespace Sea_Battle
                 }
             };
 
-        private Button CreateButton(int id) {
-            if (id == 1) {
-                return new()
-                {
-                    HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                    VerticalContentAlignment = VerticalAlignment.Stretch,
-                    Padding = new Thickness(5),
-                    Content = new Border()
-                    {
-                        Background = Brushes.Red
-                    }
-                };
-            }
-            else if(id == 2)
+        private Button CreateButton()
+        {
+            Button button = new()
             {
-                return new()
-                {
-                    HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                    VerticalContentAlignment = VerticalAlignment.Stretch,
-                    Padding = new Thickness(5),
-                    Content = new Border()
-                    {
-                        Background = Brushes.Blue
-                    }
-                };
-            }
-            else
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                VerticalContentAlignment = VerticalAlignment.Stretch,
+                Padding = new Thickness(5)
+            };
+
+            Grid grid = new();
+            button.Content = grid;
+
+            Border border = new()
             {
-                return new()
-                {
-                    HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                    VerticalContentAlignment = VerticalAlignment.Stretch,
-                    Padding = new Thickness(5),
-                    Content = new Border()
-                    {
-                        Background = Brushes.Black
-                    }
-                };
-            }
+                Background = Brushes.Red
+            };
+
+            Path path = new()
+            {
+                Stretch = Stretch.Fill,
+                Stroke = Brushes.Black,
+                StrokeThickness = 3,
+                Data = Geometry.Parse("M 0 0 L 1 1 M 0 1 L 1 0")
+            };
+
+            grid.Children.Add(border);
+            grid.Children.Add(path);
+
+            return button;
         }
-        
+
         private void Window_Closed(object sender, EventArgs e)
             => ((GameWindowViewModel)DataContext).cancellationTokenSource.Cancel();
     }

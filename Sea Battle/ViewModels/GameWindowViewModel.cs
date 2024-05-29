@@ -3,19 +3,23 @@ using Models;
 using System.Windows;
 using System.Windows.Input;
 using Sea_Battle.Infrastructure;
+using Sea_Battle.Views;
 
 namespace Sea_Battle.ViewModels
 {
     [AddINotifyPropertyChangedInterface]
     class GameWindowViewModel
     {
+        private readonly Window window;
         public readonly CancellationTokenSource cancellationTokenSource = new();
         public Field CurrentUserField { get; set; }
         public Field OpponentField { get; set; }
         public ICommand ShootCommand { get; set; }
 
-        public GameWindowViewModel()
+        public GameWindowViewModel(Window window)
         {
+            this.window = window;
+
             if (CurrentUser.game.HostUser.Login == CurrentUser.user.Login)
             {
                 CurrentUserField = CurrentUser.game.HostField;
@@ -70,17 +74,21 @@ namespace Sea_Battle.ViewModels
 
                     if (response.Game.Winner is not null)
                     {
-                        //окно результатов
+                        window.Dispatcher.Invoke(() =>
+                        {
+                            CurrentUser.SwitchWindow<ResultsWindow>(window);
+                        });
                     }
 
                     await Task.Delay(100);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
         }
+
         private async void Shoot(int index)
         {
             try
@@ -88,7 +96,8 @@ namespace Sea_Battle.ViewModels
                 Request request = new()
                 {
                     Header = "SHOOT",
-                    Cell = OpponentField.Cells[index],
+                    Cell = OpponentField.Cells[index], 
+                    Index = index,
                     User = CurrentUser.user,
                     Game = CurrentUser.game
                 };

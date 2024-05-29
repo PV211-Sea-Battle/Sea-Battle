@@ -6,6 +6,7 @@ namespace Server
     public class DbServer
     {
         private ServerDbContext _db = null!;
+        private int shipsDestroyed = 0;
         public void ShowFirst5RowsOfEveryTable()
         {
             try { _db = new ServerDbContext(); }
@@ -276,7 +277,7 @@ namespace Server
             {
                 if (user.Login == game.HostUser.Login)
                 {
-                    for (int x = 0; x < game.ClientField.Cells.Count; x++)
+                    for (int x = 0; x < game.ClientField?.Cells.Count; x++)
                     {
                         if (game.ClientField.Cells[x].IsHit == false)
                         {
@@ -286,7 +287,7 @@ namespace Server
                 }
                 else
                 {
-                    for (int x = 0; x < game.HostField.Cells.Count; x++)
+                    for (int x = 0; x < game.HostField?.Cells.Count; x++)
                     {
                         if (game.HostField.Cells[x].IsHit == false)
                         {
@@ -296,16 +297,29 @@ namespace Server
                 }
             }
 
+            if (game.HostField?.Cells.Count(item => item.IsContainsShip && item.IsHit) == 20)
+            {
+                game.Winner = game.ClientUser;
+            }
+
+            if (game.ClientField?.Cells.Count(item => item.IsContainsShip && item.IsHit) == 20)
+            {
+                game.Winner = game.HostUser;
+            }
+
             return game;
         }
 
-        public static async Task<string?> Shoot(int cellId, int gameId, int userId)
+        public static async Task<string?> Shoot(int cellId, int gameId, int userId, int index)
         {
             try
             {
                 await using ServerDbContext context = new();
 
-                Cell? cell = context.Cell.FirstOrDefault(item => item.Id == cellId);
+                Cell? cell = context.Cell
+                    .Include(item => item.Field)
+                        .ThenInclude(item => item.Cells)
+                    .FirstOrDefault(item => item.Id == cellId);
                 Game? game = context.Game
                     .Include(item => item.HostUser)
                     .Include(item => item.ClientUser)
@@ -314,7 +328,7 @@ namespace Server
 
                 if (cell is null || game is null || user is null)
                 {
-                    return "cell or game or user in null";
+                    return "cell or game or user is null";
                 }
 
                 if (user.IsTurn == false)
@@ -324,8 +338,59 @@ namespace Server
 
                 cell.IsHit = true;
 
-                game.HostUser.IsTurn = user.Login != game.HostUser.Login;
-                game.ClientUser.IsTurn = user.Login == game.HostUser.Login;
+                if (cell.IsContainsShip)
+                {
+                    game.HostUser.IsTurn = user.Login == game.HostUser.Login;
+                    game.ClientUser.IsTurn = user.Login == game.ClientUser.Login;
+
+                    Field field = cell.Field;
+                    field.Cells = field.Cells.OrderBy(item => item.Id).ToList();
+
+                    List<int>? neighbours = [index];
+
+                    foreach (int dir in new[] { -1, 1, -10, 10 })
+                    {
+                        int seek = dir;
+
+                        while (index + seek >= 0
+                            && index + seek < field.Cells.Count
+                            && (dir != -1 || (index + seek + 1) % 10 != 0)
+                            && (dir != 1 || (index + seek) % 10 != 0)
+                            && field.Cells[index + seek].IsContainsShip)
+                        {
+                            if (field.Cells[index + seek].IsHit == false)
+                            {
+                                neighbours = null;
+                                break;
+                            }
+
+                            neighbours?.Add(index + seek);
+                            seek += dir;
+                        }
+                    }
+
+                    if (neighbours is not null)
+                    {
+                        foreach (int seek in neighbours)
+                        {
+                            foreach (int dir in new[] { -11, -10, -9, -1, 1, 9, 10, 11 })
+                            {
+                                if (seek + dir >= 0
+                                    && seek + dir < field.Cells.Count
+                                    && ((dir != -11 && dir != -1 && dir != 9) || (seek + dir + 1) % 10 != 0)
+                                    && ((dir != -9 && dir != 1 && dir != 11) || (seek + dir) % 10 != 0))
+                                {
+                                    field.Cells[seek + dir].IsHit = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    game.HostUser.IsTurn = user.Login != game.HostUser.Login;
+                    game.ClientUser.IsTurn = user.Login == game.HostUser.Login;
+                }
 
                 await context.SaveChangesAsync();
 

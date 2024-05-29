@@ -2,6 +2,7 @@
 using System.Net;
 using System.Runtime.Serialization.Formatters.Binary;
 using Models;
+using System.Runtime.Serialization;
 
 #pragma warning disable SYSLIB0011
 #pragma warning disable CS8600
@@ -45,7 +46,7 @@ namespace Server
             {
                 if(_isServerStarted)
                 {
-                    _ = Task.Factory.StartNew(() =>
+                    _ = Task.Run(() =>
                     {
                         while (Console.ReadKey(true).Key != ConsoleKey.End) ;
                         _isServerStarted = false;
@@ -240,29 +241,48 @@ namespace Server
                                         $"{request.Header} request. | UserId: {request.User.Id} | Status: {status} \n");
                                 break;
                             case "ENEMY WAIT":
-                                user = db.EnemyWait(request.Game.Id, request.User.Id);
+                                Game Game = db.EnemyWait(request.Game.Id, request.User.Id);
                                 status = "FAILURE";
 
-                                if (user is not null)
+                                if (Game is not null)
                                 {
-                                    var ewResponce = new Response()
+                                    var ewResponse = new Response()
                                     {
-                                        User = user
+                                        Game = Game
                                     };
-                                    bf.Serialize(ns, ewResponce);
+                                    bf.Serialize(ns, ewResponse);
                                     status = "SUCCESS";
                                 }
                                 else
                                 {
-                                    var ewResponce = new Response()
+                                    var ewResponse = new Response()
                                     {
                                         ErrorMessage = "Error:\nInvalid user or game"
                                     };
-                                    bf.Serialize(ns, ewResponce);
+                                    bf.Serialize(ns, ewResponse);
                                 }
 
                                 if (_isExtendedLogsEnabled)
                                     await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}][EXT-LOG] " +
+                                        $"{request.Header} request. | GameId: {request.Game.Id} | " +
+                                        $"UserId: {request.User.Id} | Status: {status} \n");
+                                break;
+                            case "SHOOT":
+                                string? error = await DbServer.Shoot(request.Cell.Id, request.Game.Id, request.User.Id, request.Index.Value);
+                                status = "SUCCESS";
+
+                                if (error is not null)
+                                {
+                                    status = "FAILURE";
+                                }
+
+                                Response sresponse = new()
+                                {
+                                    ErrorMessage = error
+                                };
+                                bf.Serialize(ns, sresponse);
+
+                                await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
                                         $"{request.Header} request. | GameId: {request.Game.Id} | " +
                                         $"UserId: {request.User.Id} | Status: {status} \n");
                                 break;
@@ -278,10 +298,12 @@ namespace Server
                         acceptor.Close();
                         ns.Close();
                     }
+                    catch (IOException) { }
                     catch (SocketException) { }
+                    catch (SerializationException) { }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message);
+                        Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.ToString());
                         return;
                     }
                 }
@@ -290,7 +312,7 @@ namespace Server
                     string? choice;
                     do
                     {
-                        Console.Write("Avaivable commands:" +
+                        Console.Write("Available commands:" +
                         "\n'START' - Start the server." +
                         $"\n'EDIT' - Edit address file. Current address is {ipAddress}:{port}" +
                         "\n'VIEWDB' - View first 5 rows of every table in database." +

@@ -50,35 +50,35 @@ namespace Sea_Battle.ViewModels
 
                     Response response = await CurrentUser.SendMessageAsync(request);
 
-                    Application.Current.Dispatcher.Invoke(() =>
+                    if (response.Game.HostUser.Login == CurrentUser.user.Login)
                     {
-                        if (response.Game.HostUser.Login == CurrentUser.user.Login)
-                        {
-                            CurrentUserField = response.Game.HostField;
-                            OpponentField = response.Game.ClientField;
-                        }
-                        else
-                        {
-                            CurrentUserField = response.Game.ClientField;
-                            OpponentField = response.Game.HostField;
-                        }
+                        CurrentUserField = response.Game.HostField;
+                        OpponentField = response.Game.ClientField;
+                    }
+                    else
+                    {
+                        CurrentUserField = response.Game.ClientField;
+                        OpponentField = response.Game.HostField;
+                    }
 
-                        if (response.Game.HostUser.Login == CurrentUser.user.Login)
-                        {
-                            CurrentUser.user = response.Game.HostUser;
-                        }
-                        else
-                        {
-                            CurrentUser.user = response.Game.ClientUser;
-                        }
+                    if (response.Game.HostUser.Login == CurrentUser.user.Login)
+                    {
+                        CurrentUser.user = response.Game.HostUser;
+                    }
+                    else
+                    {
+                        CurrentUser.user = response.Game.ClientUser;
+                    }
 
-                        CurrentUser.game = response.Game;
+                    CurrentUser.game = response.Game;
 
-                        if (response.Game.Winner is not null)
+                    if (response.Game.Winner is not null)
+                    {
+                        window.Dispatcher.Invoke(() =>
                         {
                             CurrentUser.SwitchWindow<ResultsWindow>(window);
-                        }
-                    });
+                        });
+                    }
 
                     await Task.Delay(100);
                 }
@@ -96,7 +96,8 @@ namespace Sea_Battle.ViewModels
                 Request request = new()
                 {
                     Header = "SHOOT",
-                    Cell = OpponentField.Cells[index],
+                    Cell = OpponentField.Cells[index], 
+                    Index = index,
                     User = CurrentUser.user,
                     Game = CurrentUser.game
                 };

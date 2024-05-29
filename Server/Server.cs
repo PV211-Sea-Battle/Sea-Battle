@@ -268,7 +268,7 @@ namespace Server
                                         $"UserId: {request.User.Id} | Status: {status} \n");
                                 break;
                             case "SHOOT":
-                                string? error = await DbServer.Shoot(request.Cell.Id, request.Game.Id, request.User.Id);
+                                string? error = await DbServer.Shoot(request.Cell.Id, request.Game.Id, request.User.Id, request.Index.Value);
                                 status = "SUCCESS";
 
                                 if (error is not null)

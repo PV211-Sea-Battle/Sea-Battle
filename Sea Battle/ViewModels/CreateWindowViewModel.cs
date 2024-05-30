@@ -10,17 +10,20 @@ namespace Sea_Battle.ViewModels
     [AddINotifyPropertyChangedInterface]
     class CreateWindowViewModel
     {
+        private readonly Window window;
         public string Name { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public bool IsChecked { get; set; }
         public ICommand CreateCommand { get; }
         public ICommand CancelCommand { get; }
-        public CreateWindowViewModel()
+        public CreateWindowViewModel(Window window)
         {
-            CreateCommand = new RelayCommand<Window>(Create, CanCreate);
-            CancelCommand = new RelayCommand<Window>(Cancel);
+            this.window = window;
+
+            CreateCommand = new RelayCommand(Create, CanCreate);
+            CancelCommand = new RelayCommand(Cancel);
         }
-        public async void Create(Window window)
+        public async void Create()
         {
             try
             {
@@ -50,11 +53,11 @@ namespace Sea_Battle.ViewModels
                 Password = string.Empty;
             }
         }
-        public void Cancel(Window window)
+        public void Cancel()
             => CurrentUser.SwitchWindow<MainMenuWindow>(window);
         public bool CanCreate()
             => string.IsNullOrEmpty(Name) == false
-            && (IsChecked == false
-            || string.IsNullOrEmpty(Password) == false);
+            && (string.IsNullOrEmpty(Password) == false
+            || IsChecked == false);
     }
 }

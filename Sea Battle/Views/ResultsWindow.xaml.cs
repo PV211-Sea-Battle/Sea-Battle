@@ -8,7 +8,7 @@ namespace Sea_Battle
         public ResultsWindow()
         {
             InitializeComponent();
-            DataContext = new ResultsWindowViewModel();
+            DataContext = new ResultsWindowViewModel(this);
         }
     }
 }

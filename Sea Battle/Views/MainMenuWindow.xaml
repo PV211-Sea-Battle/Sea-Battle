@@ -31,16 +31,14 @@
                         FontSize="25"
                         FontWeight="Bold"
                         Margin="3 0"
-                        Command="{Binding JoinCommand}"
-                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+                        Command="{Binding JoinCommand}"/>
                 <Button Grid.Column="2"
                         Style="{StaticResource ButtonDarkStyle}"
                         Content="Create Game"
                         FontSize="25"
                         FontWeight="Bold"
                         Margin="3 0"
-                        Command="{Binding CreateCommand}"
-                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+                        Command="{Binding CreateCommand}"/>
             </Grid>
         </GroupBox>
         <GroupBox Header="Game List">

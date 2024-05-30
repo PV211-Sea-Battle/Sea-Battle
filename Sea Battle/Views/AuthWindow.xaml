@@ -72,22 +72,22 @@
                             Content="Login"
                             Style="{StaticResource ButtonDarkStyle}"
                             Margin="0 0 5 0"
-                            Command="{Binding SignInCommand}"
-                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+                            Command="{Binding EntryCommand}"
+                            CommandParameter="SIGN IN"/>
                     <Button Grid.Column="1"
                             Height="50"
                             Content="Register"
                             Style="{StaticResource ButtonDarkStyle}"
                             Margin="5 0 0 0"
-                            Command="{Binding RegisterCommand}"
-                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+                            Command="{Binding EntryCommand}"
+                            CommandParameter="REGISTER"/>
                 </Grid>
             </Grid>
             <Grid VerticalAlignment="Bottom">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>

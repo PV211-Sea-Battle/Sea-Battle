@@ -12,80 +12,67 @@ namespace Sea_Battle.ViewModels
     {
         private readonly Window window;
         public readonly CancellationTokenSource cancellationTokenSource = new();
-        public Field CurrentUserField { get; set; }
-        public Field OpponentField { get; set; }
+        public Field CurrentUserField { get; set; } = null!;
+        public Field OpponentField { get; set; } = null!;
         public ICommand ShootCommand { get; set; }
 
         public GameWindowViewModel(Window window)
         {
             this.window = window;
 
-            if (CurrentUser.game.HostUser.Login == CurrentUser.user.Login)
-            {
-                CurrentUserField = CurrentUser.game.HostField;
-                OpponentField = CurrentUser.game.ClientField;
-            }
-            else
-            {
-                CurrentUserField = CurrentUser.game.ClientField;
-                OpponentField = CurrentUser.game.HostField;
-            }
-
-            Task.Run(Refresh);
+            Task.Run(RefreshThread);
 
             ShootCommand = new RelayCommand<int>(Shoot, CanShoot);
         }
-        private async void Refresh()
+        private async void RefreshThread()
         {
             while (cancellationTokenSource.IsCancellationRequested == false)
             {
-                try
+                await Refresh();
+                await Task.Delay(100);
+            }
+        }
+        private async Task Refresh()
+        {
+            try
+            {
+                Request request = new()
                 {
-                    Request request = new()
-                    {
-                        Header = "ENEMY WAIT",
-                        User = CurrentUser.user,
-                        Game = CurrentUser.game
-                    };
+                    Header = "ENEMY WAIT",
+                    User = CurrentUser.user,
+                    Game = CurrentUser.game
+                };
 
-                    Response response = await CurrentUser.SendMessageAsync(request);
+                Response response = await CurrentUser.SendMessageAsync(request);
 
-                    if (response.Game.HostUser.Login == CurrentUser.user.Login)
-                    {
-                        CurrentUserField = response.Game.HostField;
-                        OpponentField = response.Game.ClientField;
-                    }
-                    else
-                    {
-                        CurrentUserField = response.Game.ClientField;
-                        OpponentField = response.Game.HostField;
-                    }
-
-                    if (response.Game.HostUser.Login == CurrentUser.user.Login)
-                    {
-                        CurrentUser.user = response.Game.HostUser;
-                    }
-                    else
-                    {
-                        CurrentUser.user = response.Game.ClientUser;
-                    }
-
-                    CurrentUser.game = response.Game;
-
-                    if (response.Game.Winner is not null)
-                    {
-                        window.Dispatcher.Invoke(() =>
-                        {
-                            CurrentUser.SwitchWindow<ResultsWindow>(window);
-                        });
-                    }
-
-                    await Task.Delay(100);
-                }
-                catch (Exception ex)
+                if (response.Game?.HostUser.Id == CurrentUser.user?.Id)
                 {
-                    MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    CurrentUser.user = response.Game?.HostUser;
+
+                    CurrentUserField = response.Game?.HostField!;
+                    OpponentField = response.Game?.ClientField!;
                 }
+                else
+                {
+                    CurrentUser.user = response.Game?.ClientUser;
+
+                    CurrentUserField = response.Game?.ClientField!;
+                    OpponentField = response.Game?.HostField!;
+                }
+
+                CurrentUser.game = response.Game;
+
+                if (response.Game?.Winner is not null)
+                {
+                    window.Dispatcher.Invoke(() =>
+                    {
+                        CurrentUser.SwitchWindow<ResultsWindow>(window);
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -104,15 +91,17 @@ namespace Sea_Battle.ViewModels
 
                 await CurrentUser.SendMessageAsync(request);
 
-                CurrentUser.user.IsTurn = false;
+                CurrentUser.user!.IsTurn = false;
+
+                await Refresh();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
             }
         }
-        private bool CanShoot()
-            => CurrentUser.user.IsTurn;
+        private bool CanShoot(int index)
+            => CurrentUser.user!.IsTurn
+            && OpponentField?.Cells[index].IsHit == false;
     }
 }

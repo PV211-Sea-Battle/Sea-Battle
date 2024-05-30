@@ -17,10 +17,7 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            
-            <!-- Left Grid -->
-            <Grid Margin="30"
-                  Grid.Column="0">
+            <Grid Margin="30">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="0.1*"/>
                     <RowDefinition/>
@@ -41,8 +38,6 @@
                              Rows="10"
                              Columns="10"/>
             </Grid>
-            
-            <!-- Right Grid -->
             <Grid Margin="30"
                   Grid.Column="1">
                 <Grid.RowDefinitions>

@@ -80,7 +80,7 @@ namespace Sea_Battle.Views
                 }
             };
 
-        private Button CreateButton()
+        private static Button CreateButton()
             => new()
             {
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,

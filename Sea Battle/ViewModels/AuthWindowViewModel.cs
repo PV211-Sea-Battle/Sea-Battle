@@ -10,20 +10,21 @@ namespace Sea_Battle.ViewModels
     [AddINotifyPropertyChangedInterface]
     class AuthWindowViewModel
     {
+        private readonly Window window;
         public string Login { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string Address { get; set; } = CurrentUser.address ?? string.Empty;
         public string Port { get; set; } = CurrentUser.port.ToString() ?? string.Empty;
-        public ICommand SignInCommand { get; }
-        public ICommand RegisterCommand { get; }
+        public ICommand EntryCommand { get; }
         public ICommand ConnectCommand { get; }
-        public AuthWindowViewModel()
+        public AuthWindowViewModel(Window window)
         {
-            SignInCommand = new RelayCommand<Window>(async window => await Entry("SIGN IN", window), CanEntry);
-            RegisterCommand = new RelayCommand<Window>(async window => await Entry("REGISTER", window), CanEntry);
+            this.window = window;
+
+            EntryCommand = new RelayCommand<string>(Entry, CanEntry);
             ConnectCommand = new RelayCommand(Connect, CanConnect);
         }
-        public async Task Entry(string header, Window window)
+        public async void Entry(string header)
         {
             try
             {

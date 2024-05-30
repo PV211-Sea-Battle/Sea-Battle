@@ -13,6 +13,7 @@ namespace Sea_Battle.ViewModels
     [AddINotifyPropertyChangedInterface]
     internal class MainMenuWindowViewModel
     {
+        private readonly Window window;
         public readonly CancellationTokenSource cancellationTokenSource = new();
         public ICollectionView SortedGames { get; set; }
         public ObservableCollection<Game> Games { get; set; } = [];
@@ -20,16 +21,18 @@ namespace Sea_Battle.ViewModels
         public ICommand SortCommand { get; }
         public ICommand JoinCommand { get; }
         public ICommand CreateCommand { get; }
-        public MainMenuWindowViewModel()
+        public MainMenuWindowViewModel(Window window)
         {
+            this.window = window;
+
             Task.Run(Refresh);
 
             SortedGames = CollectionViewSource.GetDefaultView(Games);
             SortedGames.SortDescriptions.Add(new("Name", ListSortDirection.Ascending));
 
             SortCommand = new RelayCommand<string>(Sort);
-            JoinCommand = new RelayCommand<Window>(Join, CanJoin);
-            CreateCommand = new RelayCommand<Window>(Create);
+            JoinCommand = new RelayCommand(Join, CanJoin);
+            CreateCommand = new RelayCommand(Create);
         }
         private async void Refresh()
         {
@@ -44,7 +47,7 @@ namespace Sea_Battle.ViewModels
 
                     Response response = await CurrentUser.SendMessageAsync(request);
 
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    await window.Dispatcher.InvokeAsync(() =>
                     {
                         int? id = null;
                         if (SelectedGame is not null)
@@ -84,7 +87,7 @@ namespace Sea_Battle.ViewModels
                 sdc[0] = new SortDescription(header, ListSortDirection.Ascending);
             }
         }
-        public async void Join(Window window)
+        public async void Join()
         {
             CurrentUser.game = SelectedGame!;
 
@@ -115,7 +118,7 @@ namespace Sea_Battle.ViewModels
                 }
             }
         }
-        public void Create(Window window)
+        public void Create()
             => CurrentUser.SwitchWindow<CreateWindow>(window);
         public bool CanJoin()
             => SelectedGame is not null;

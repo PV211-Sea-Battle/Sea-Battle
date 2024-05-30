@@ -28,8 +28,7 @@
                     Content="Back to Main Menu"
                     Style="{StaticResource ButtonDarkStyle}"
                     Margin="0 50 0 0"
-                    Command="{Binding BackCommand}"
-                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+                    Command="{Binding BackCommand}"/>
             <ItemsControl Grid.Row="3"
                           Margin="0 50 0 0"
                           ItemsSource="{Binding LogList}"

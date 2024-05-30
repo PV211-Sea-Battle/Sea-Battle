@@ -10,11 +10,14 @@ namespace Sea_Battle.ViewModels
     [AddINotifyPropertyChangedInterface]
     class ResultsWindowViewModel
     {
+        private readonly Window window;
         public ObservableCollection<string> LogList { get; set; } = [];
         public ICommand BackCommand { get; set; }
         public string ImagePath { get; set; }
-        public ResultsWindowViewModel()
+        public ResultsWindowViewModel(Window window)
         {
+            this.window = window;
+
             if (CurrentUser.game?.Winner?.Login == CurrentUser.user?.Login)
             {
                 ImagePath = "../Resources/Victory.jpg";
@@ -24,12 +27,12 @@ namespace Sea_Battle.ViewModels
                 ImagePath = "../Resources/Defeat.jpg";
             }
 
-            BackCommand = new RelayCommand<Window>(Back);
+            BackCommand = new RelayCommand(Back);
         }
-        private void Back(Window window)
+        private void Back()
             => CurrentUser.SwitchWindow<MainMenuWindow>(window);
         private void Log(string message)
-            => Application.Current.Dispatcher.Invoke(() =>
+            => window.Dispatcher.Invoke(() =>
             {
                 LogList.Add($"{DateTime.Now.ToShortTimeString()} : {message}");
             });

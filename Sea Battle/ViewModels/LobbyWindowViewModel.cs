@@ -13,10 +13,10 @@ namespace Sea_Battle.ViewModels
     {
         private readonly Window window;
         public readonly CancellationTokenSource cancellationTokenSource = new();
-        public Field Field { get; set; } = new() { Cells = new Cell[100].ToList() };
+        public Field Field { get; set; } = new() { Cells = new Cell[100].Select(_ => new Cell()).ToList() };
         public ObservableCollection<int> Ships { get; set; } = [4, 3, 2, 1];
         public ObservableCollection<string> LogList { get; set; } = [];
-        public int ReadyPlayers { get; set; } = 0;
+        public int ReadyPlayers { get; set; }
         public ICommand CellCommand { get; set; }
         public ICommand ResetCommand { get; set; }
         public ICommand ReadyCommand { get; set; }
@@ -27,11 +27,6 @@ namespace Sea_Battle.ViewModels
             Task.Run(Refresh);
 
             Log($"{CurrentUser.user} Connected");
-
-            for (int x = 0; x < 100; x++)
-            {
-                Field.Cells[x] = new();
-            }
 
             CellCommand = new RelayCommand<int>(Cell, CanCell);
             ResetCommand = new RelayCommand(Reset);
@@ -83,7 +78,7 @@ namespace Sea_Battle.ViewModels
                     {
                         CurrentUser.user.IsTurn = CurrentUser.user.Login == CurrentUser.game.HostUser.Login;
 
-                        Application.Current.Dispatcher.Invoke(() =>
+                        window.Dispatcher.Invoke(() =>
                         {
                             CurrentUser.SwitchWindow<GameWindow>(window);
                         });
@@ -133,7 +128,7 @@ namespace Sea_Battle.ViewModels
         }
 
         private void Log(string message) 
-            => Application.Current.Dispatcher.Invoke(() =>
+            => window.Dispatcher.Invoke(() =>
             {
                 LogList.Add($"{DateTime.Now.ToShortTimeString()} : {message}");
             });

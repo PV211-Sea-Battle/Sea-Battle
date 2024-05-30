@@ -9,7 +9,7 @@ namespace Sea_Battle
         {
             InitializeComponent();
 
-            DataContext = new CreateWindowViewModel();
+            DataContext = new CreateWindowViewModel(this);
         }
     }
 }

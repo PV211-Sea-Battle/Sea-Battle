@@ -10,15 +10,18 @@ namespace Sea_Battle.ViewModels
     [AddINotifyPropertyChangedInterface]
     class ConnectWindowViewModel
     {
+        private readonly Window window;
         public string Password { get; set; } = string.Empty;
         public ICommand ConnectCommand { get; }
         public ICommand CancelCommand { get; }
-        public ConnectWindowViewModel()
+        public ConnectWindowViewModel(Window window)
         {
-            ConnectCommand = new RelayCommand<Window>(Connect, CanConnect);
-            CancelCommand = new RelayCommand<Window>(Cancel);
+            this.window = window;
+
+            ConnectCommand = new RelayCommand(Connect, CanConnect);
+            CancelCommand = new RelayCommand(Cancel);
         }
-        public async void Connect(Window window)
+        public async void Connect()
         {
             try
             {
@@ -44,7 +47,7 @@ namespace Sea_Battle.ViewModels
                 Password = string.Empty;
             }
         }
-        public void Cancel(Window window)
+        public void Cancel()
             => CurrentUser.SwitchWindow<MainMenuWindow>(window);
         public bool CanConnect()
             => string.IsNullOrEmpty(Password) == false;

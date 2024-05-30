@@ -10,7 +10,7 @@ namespace Sea_Battle
         {
             InitializeComponent();
 
-            DataContext = new AuthWindowViewModel();
+            DataContext = new AuthWindowViewModel(this);
         }
         private void CheckBox_Click(object sender, RoutedEventArgs e)
         {

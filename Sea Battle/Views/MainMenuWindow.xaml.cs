@@ -9,7 +9,7 @@ namespace Sea_Battle.Views
         {
             InitializeComponent();
 
-            DataContext = new MainMenuWindowViewModel();
+            DataContext = new MainMenuWindowViewModel(this);
         }
 
         private void Window_Closed(object sender, EventArgs e)

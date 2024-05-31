@@ -83,7 +83,7 @@ namespace Sea_Battle.ViewModels
                 Request request = new()
                 {
                     Header = "SHOOT",
-                    Cell = OpponentField.Cells[index], 
+                    Field = OpponentField,
                     Index = index,
                     User = CurrentUser.user,
                     Game = CurrentUser.game

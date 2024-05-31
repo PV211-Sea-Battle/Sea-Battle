@@ -19,20 +19,15 @@ namespace Server
                 Console.WriteLine($"Id: {user.Id} | Login: {user.Login} | Password: {user.Password}");
             }
 
-            var games = _db.Game.OrderByDescending(g => g.Id).ToList().Take(5);
+            var games = _db.Game
+                .Include(item => item.HostUser)
+                .Include(item => item.ClientUser)
+                .OrderByDescending(g => g.Id).ToList().Take(5);
             Console.WriteLine("\nGames:\n");
             foreach (var game in games)
             {
                 Console.WriteLine($"Id: {game.Id} | Name: {game.Name} | IsPrivate?: {game.IsPrivate}" +
-                    $"Password: {game.Password} | HostUserId: {game.HostUserId} | ClientUserId: {game.ClientUserId}");
-            }
-
-            var cgames = _db.CompletedGame.OrderByDescending(cg => cg.Id).ToList().Take(5);
-            Console.WriteLine("\nCompleted Games:\n");
-            foreach (var game in cgames)
-            {
-                Console.WriteLine($"Id: {game.Id} | Name: {game.Name} | IsPrivate?: {game.IsPrivate}" +
-                    $"Password: {game.Password} | Winner: {game.Winner} | HostUserId: {game.HostUserId} | ClientUserId: {game.ClientUserId}");
+                    $"Password: {game.Password} | HostUserId: {game.HostUser.Id} | ClientUserId: {game.ClientUser.Id}");
             }
 
             var fields = _db.Field.OrderByDescending(f => f.Id).ToList().Take(5);
@@ -42,11 +37,11 @@ namespace Server
                 Console.WriteLine($"Id: {field.Id}");
             }
 
-            var cells = _db.Cell.OrderByDescending(c => c.Id).ToList().Take(5);
+            var cells = _db.Cell.Include(item => item.Field).OrderByDescending(c => c.Id).ToList().Take(5);
             Console.WriteLine("\nCells:\n");
             foreach (var cell in cells)
             {
-                Console.WriteLine($"Id: {cell.Id} | FieldId: {cell.FieldId} | " +
+                Console.WriteLine($"Id: {cell.Id} | FieldId: {cell.Field.Id} | " +
                     $"IsContainsShip?: {cell.IsContainsShip} | IsHit?: {cell.IsHit}");
             }
         }
@@ -102,7 +97,8 @@ namespace Server
             catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
             var games = _db.Game
                 .Include(item => item.HostUser)
-                .Where(item => item.ClientUserId == null)
+                .Include(item => item.ClientUser)
+                .Where(item => item.ClientUser == null)
                 .ToList();
             return games;
         }
@@ -111,7 +107,7 @@ namespace Server
         {
             try { _db = new ServerDbContext(); }
             catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
-            Game? game = (from g in _db.Game
+            Game? game = (from g in _db.Game.Include(item => item.ClientUser)
                           where g.Id == gameId
                           select g).ToList().FirstOrDefault();
             return game??null!;
@@ -130,7 +126,7 @@ namespace Server
                           select u).ToList().FirstOrDefault();
             if (game is null || user is null)
                 return null!;
-            game.ClientUserId = user.Id;
+            game.ClientUser = user;
             _db.SaveChanges();
 
             game.HostUser.IsReady = false;
@@ -142,7 +138,7 @@ namespace Server
             try { _db = new ServerDbContext(); }
             catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
             bool check = true;
-            var games = _db.Game.Where(item => item.ClientUserId == null).ToList();
+            var games = _db.Game.Include(item => item.ClientUser).Where(item => item.ClientUser == null).ToList();
 
             foreach (var g in games)
                 if (g.Name == game.Name)
@@ -158,11 +154,11 @@ namespace Server
                     Name = game.Name,
                     IsPrivate = game.IsPrivate,
                     Password = game.Password,
-                    HostUserId = userId
+                    HostUser = user
                 });
                 _db.SaveChanges();
-                return (from g in _db.Game
-                       where g.Name.Equals(game.Name) && g.ClientUserId == null
+                return (from g in _db.Game.Include(item => item.ClientUser)
+                       where g.Name.Equals(game.Name) && g.ClientUser == null
                        select g).ToList().FirstOrDefault()??null!;
             }
             return null!;
@@ -181,6 +177,8 @@ namespace Server
             var game = (from g in _db.Game
                         .Include(item => item.HostUser)
                         .Include(item => item.ClientUser)
+                        .Include(item => item.HostField)
+                        .Include(item => item.ClientField)
                         where g.Id == gameId
                         select g).ToList().FirstOrDefault();
             if (user is null)
@@ -199,30 +197,25 @@ namespace Server
                 if (!CheckField(field))
                     return "Incorrect ships placement";
 
-                field.GameId = gameId;
-                if (userId == game.HostUserId)
+                if (userId == game.HostUser.Id)
                 {
-                    if (game.HostFieldId == null)
+                    if (game.HostField == null)
                     {
                         game.HostField = field;
                         _db.SaveChanges();
-                        game.HostFieldId = game.HostField.Id;
-                        _db.SaveChanges();
                         fieldId = -1;
                     }
-                    else fieldId = (int)game.HostFieldId;
+                    else fieldId = game.HostField.Id;
                 }
-                else if (userId == game.ClientUserId)
+                else if (userId == game.ClientUser?.Id)
                 {
-                    if (game.ClientFieldId == null)
+                    if (game.ClientField == null)
                     {
                         game.ClientField = field;
                         _db.SaveChanges();
-                        game.ClientFieldId = game.ClientField.Id;
-                        _db.SaveChanges();
                         fieldId = -1;
                     }
-                    else fieldId = (int)game.ClientFieldId;
+                    else fieldId = game.ClientField.Id;
                 }
                 else
                     return "Incorrect user ID";
@@ -310,25 +303,24 @@ namespace Server
             return game;
         }
 
-        public static async Task<string?> Shoot(int cellId, int gameId, int userId, int index)
+        public static async Task<string?> Shoot(int fieldId, int gameId, int userId, int index)
         {
             try
             {
                 await using ServerDbContext context = new();
 
-                Cell? cell = context.Cell
-                    .Include(item => item.Field)
-                        .ThenInclude(item => item.Cells)
-                    .FirstOrDefault(item => item.Id == cellId);
+                Field? field = context.Field
+                    .Include(item => item.Cells)
+                    .FirstOrDefault(item => item.Id == fieldId);
                 Game? game = context.Game
                     .Include(item => item.HostUser)
                     .Include(item => item.ClientUser)
                     .FirstOrDefault(item => item.Id == gameId);
                 User? user = context.User.FirstOrDefault(item => item.Id == userId);
 
-                if (cell is null || game is null || user is null)
+                if (field is null || game is null || user is null)
                 {
-                    return "cell or game or user is null";
+                    return "field or game or user is null";
                 }
 
                 if (user.IsTurn == false)
@@ -336,15 +328,14 @@ namespace Server
                     return "not your turn";
                 }
 
-                cell.IsHit = true;
+                field.Cells = field.Cells.OrderBy(item => item.Id).ToList();
 
-                if (cell.IsContainsShip)
+                field.Cells[index].IsHit = true;
+
+                if (field.Cells[index].IsContainsShip)
                 {
                     game.HostUser.IsTurn = user.Login == game.HostUser.Login;
                     game.ClientUser.IsTurn = user.Login == game.ClientUser.Login;
-
-                    Field field = cell.Field;
-                    field.Cells = field.Cells.OrderBy(item => item.Id).ToList();
 
                     List<int>? neighbours = [index];
 

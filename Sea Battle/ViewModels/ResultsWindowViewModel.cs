@@ -2,7 +2,6 @@
 using Sea_Battle.Infrastructure;
 using System.Windows;
 using System.Windows.Input;
-using System.Collections.ObjectModel;
 using Sea_Battle.Views;
 
 namespace Sea_Battle.ViewModels
@@ -11,7 +10,6 @@ namespace Sea_Battle.ViewModels
     class ResultsWindowViewModel
     {
         private readonly Window window;
-        public ObservableCollection<string> LogList { get; set; } = [];
         public ICommand BackCommand { get; set; }
         public string ImagePath { get; set; }
         public ResultsWindowViewModel(Window window)
@@ -31,10 +29,5 @@ namespace Sea_Battle.ViewModels
         }
         private void Back()
             => CurrentUser.SwitchWindow<MainMenuWindow>(window);
-        private void Log(string message)
-            => window.Dispatcher.Invoke(() =>
-            {
-                LogList.Add($"{DateTime.Now.ToShortTimeString()} : {message}");
-            });
     }
 }

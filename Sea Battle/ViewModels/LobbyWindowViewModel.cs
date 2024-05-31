@@ -76,7 +76,7 @@ namespace Sea_Battle.ViewModels
 
                     if (ReadyPlayers == 2)
                     {
-                        CurrentUser.user.IsTurn = CurrentUser.user.Login == CurrentUser.game.HostUser.Login;
+                        CurrentUser.user!.IsTurn = CurrentUser.user?.Login == CurrentUser.game?.HostUser.Login;
 
                         window.Dispatcher.Invoke(() =>
                         {
@@ -164,7 +164,7 @@ namespace Sea_Battle.ViewModels
 
                 await CurrentUser.SendMessageAsync(request);
 
-                if (CurrentUser.user.IsReady)
+                if (CurrentUser.user!.IsReady)
                 {
                     CurrentUser.user.IsReady = false;
                     ReadyPlayers--;
@@ -188,6 +188,6 @@ namespace Sea_Battle.ViewModels
             => Ships.Count(item => item == 0) == 4;
 
         private bool CanCell()
-            => CurrentUser.user.IsReady == false;
+            => CurrentUser.user?.IsReady == false;
     }
 }

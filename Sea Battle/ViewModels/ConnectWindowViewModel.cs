@@ -25,12 +25,13 @@ namespace Sea_Battle.ViewModels
         {
             try
             {
+                CurrentUser.game!.Password = Password;
+
                 var request = new Request()
                 {
                     Header = "JOIN",
                     User = CurrentUser.user,
-                    Game = CurrentUser.game,
-                    EnteredGamePassword = Password
+                    Game = CurrentUser.game
                 };
 
                 Response response = await CurrentUser.SendMessageAsync(request);

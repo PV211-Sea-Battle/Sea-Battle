@@ -11,7 +11,6 @@ namespace Server
         public DbSet<Field> Field { get; set; }
         public DbSet<Cell> Cell { get; set; }
         public DbSet<Game> Game { get; set; }
-        public DbSet<CompletedGame> CompletedGame { get; set; }
         public ServerDbContext() : base(GenerateOptions())
         {
             Database.EnsureCreated();

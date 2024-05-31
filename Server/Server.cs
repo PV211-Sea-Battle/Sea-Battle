@@ -144,12 +144,12 @@ namespace Server
                             case "JOIN":
                                 Game game = db.GetGame(request.Game.Id);
                                 user = request.User;
-                                string? gamePassword = request.EnteredGamePassword;
+                                string? gamePassword = request.Game.Password;
                                 status = "FAILURE";
 
                                 if(game is not null)
                                 {
-                                    if (game.ClientUserId == null)
+                                    if (game.ClientUser is null)
                                     {
                                         if (game.IsPrivate)
                                         {
@@ -268,7 +268,7 @@ namespace Server
                                         $"UserId: {request.User.Id} | Status: {status} \n");
                                 break;
                             case "SHOOT":
-                                string? error = await DbServer.Shoot(request.Cell.Id, request.Game.Id, request.User.Id, request.Index.Value);
+                                string? error = await DbServer.Shoot(request.Field.Id, request.Game.Id, request.User.Id, request.Index.Value);
                                 status = "SUCCESS";
 
                                 if (error is not null)

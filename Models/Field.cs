@@ -4,7 +4,6 @@
     public class Field
     {
         public int Id { get; set; }
-        public int GameId { get; set; }
-        public List<Cell> Cells { get; set; }
+        public List<Cell> Cells { get; set; } = [];
     }
 }

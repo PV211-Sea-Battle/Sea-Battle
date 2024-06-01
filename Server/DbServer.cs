@@ -489,6 +489,24 @@ namespace Server
             }
         }
 
+        public static async Task Offline(int userId)
+        {
+            try
+            {
+                await using ServerDbContext _db = new();
+
+                User? user = await _db.User.FirstOrDefaultAsync(item => item.Id == userId) ?? throw new("User is null");
+
+                user.IsReady = false;
+
+                await _db.SaveChangesAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         //оптимизация? не, не слышал
         private static bool CheckField(Field field)
         {

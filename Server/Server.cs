@@ -223,6 +223,10 @@ namespace Server
                                 await Log($"{request.Header} request. | GameId: {request.Game.Id} | UserId: {request.User.Id} | Status: {status} \n");
                                 break;
 
+                            case "OFFLINE":
+                                await DbServer.Offline(request.User.Id);
+                                break;
+
                             default:
                                 response.ErrorMessage = "Incorrect request header";
                                 break;

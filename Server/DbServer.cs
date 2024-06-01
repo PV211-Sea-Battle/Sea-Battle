@@ -5,318 +5,414 @@ namespace Server
 {
     public class DbServer
     {
-        private ServerDbContext _db = null!;
-        private int shipsDestroyed = 0;
-        public void ShowFirst5RowsOfEveryTable()
+        public static async Task ShowFirst5RowsOfEveryTable()
         {
-            try { _db = new ServerDbContext(); }
-            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return; }
-            var users = _db.User.OrderByDescending(u => u.Id).ToList().Take(5);
-
-            Console.WriteLine("\nUsers:\n");
-            foreach (var user in users)
+            try
             {
-                Console.WriteLine($"Id: {user.Id} | Login: {user.Login} | Password: {user.Password}");
+                await using ServerDbContext _db = new();
+
+                IQueryable<User> users = _db.User
+                    .OrderByDescending(u => u.Id)
+                    .Take(5);
+
+                IQueryable<Field> fields = _db.Field
+                    .OrderByDescending(f => f.Id)
+                    .Take(5);
+
+                IQueryable<Cell> cells = _db.Cell
+                    .OrderByDescending(c => c.Id)
+                    .Take(5)
+                    .Include(item => item.Field);
+
+                IQueryable<Game> games = _db.Game
+                    .OrderByDescending(g => g.Id)
+                    .Take(5)
+                    .Include(item => item.HostUser)
+                    .Include(item => item.ClientUser);
+
+                Console.WriteLine("\nUsers:\n");
+                foreach (User user in users)
+                {
+                    Console.WriteLine($"Id: {user.Id} | Login: {user.Login} | Password: {user.Password}");
+                }
+
+                Console.WriteLine("\nGames:\n");
+                foreach (var game in games)
+                {
+                    Console.WriteLine($"Id: {game.Id} | Name: {game.Name} | IsPrivate?: {game.IsPrivate}" +
+                        $"Password: {game.Password} | HostUserId: {game.HostUser.Id} | ClientUserId: {game.ClientUser.Id}");
+                }
+                
+                Console.WriteLine("\nFields:\n");
+                foreach (var field in fields)
+                {
+                    Console.WriteLine($"Id: {field.Id}");
+                }
+                
+                Console.WriteLine("\nCells:\n");
+                foreach (var cell in cells)
+                {
+                    Console.WriteLine($"Id: {cell.Id} | FieldId: {cell.Field.Id} | " +
+                        $"IsContainsShip?: {cell.IsContainsShip} | IsHit?: {cell.IsHit}");
+                }
             }
-
-            var games = _db.Game
-                .Include(item => item.HostUser)
-                .Include(item => item.ClientUser)
-                .OrderByDescending(g => g.Id).ToList().Take(5);
-            Console.WriteLine("\nGames:\n");
-            foreach (var game in games)
+            catch
             {
-                Console.WriteLine($"Id: {game.Id} | Name: {game.Name} | IsPrivate?: {game.IsPrivate}" +
-                    $"Password: {game.Password} | HostUserId: {game.HostUser.Id} | ClientUserId: {game.ClientUser.Id}");
-            }
-
-            var fields = _db.Field.OrderByDescending(f => f.Id).ToList().Take(5);
-            Console.WriteLine("\nFields:\n");
-            foreach (var field in fields)
-            {
-                Console.WriteLine($"Id: {field.Id}");
-            }
-
-            var cells = _db.Cell.Include(item => item.Field).OrderByDescending(c => c.Id).ToList().Take(5);
-            Console.WriteLine("\nCells:\n");
-            foreach (var cell in cells)
-            {
-                Console.WriteLine($"Id: {cell.Id} | FieldId: {cell.Field.Id} | " +
-                    $"IsContainsShip?: {cell.IsContainsShip} | IsHit?: {cell.IsHit}");
+                throw;
             }
         }
 
-        public bool RegisterUser(string login, string pass)
+        public static async Task<bool> RegisterUser(string login, string pass)
         {
-            bool check = true;
-            try { _db = new ServerDbContext(); }
-            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return false; }
-            var users = _db.User.ToList();
-
-            foreach (var user in users)
-                if (user.Login == login)
-                    check = false;
-
-            if (check)
+            try
             {
-                try
+                await using ServerDbContext _db = new();
+
+                foreach (User user in _db.User)
                 {
-                    _db.User.Add(new()
+                    if (user.Login == login)
                     {
-                        Login = login,
-                        Password = pass
-                    });
-                    _db.SaveChanges();
+                        return false;
+                    }
                 }
-                catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message); return false; }
+
+                await _db.User.AddAsync(new()
+                {
+                    Login = login,
+                    Password = pass
+                });
+
+                await _db.SaveChangesAsync();
+
                 return true;
             }
-            return false;
-        }
-        public User SignUp(string login, string pass)
-        {
-            User res = null!;
-            try { _db = new ServerDbContext(); }
-            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return res; }
-            
-            var users = _db.User.ToList();
-
-            foreach (var user in users)
+            catch
             {
-                if (user.Login == login && user.Password == pass)
-                {
-                    res = user;
-                }
+                throw;
             }
-            return res;
         }
-
-        public List<Game> GetGameList()
+        public static async Task<User?> SignIn(string login, string pass)
         {
-            try { _db = new ServerDbContext(); }
-            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
-            var games = _db.Game
-                .Include(item => item.HostUser)
-                .Include(item => item.ClientUser)
-                .Where(item => item.ClientUser == null)
-                .ToList();
-            return games;
-        }
-
-        public Game GetGame(int gameId)
-        {
-            try { _db = new ServerDbContext(); }
-            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
-            Game? game = (from g in _db.Game.Include(item => item.ClientUser)
-                          where g.Id == gameId
-                          select g).ToList().FirstOrDefault();
-            return game??null!;
-        }
-
-        public Game JoinGame(int gameId, int userId)
-        {
-            try { _db = new ServerDbContext(); }
-            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
-            Game? game = (from g in _db.Game
-                          .Include(item => item.HostUser)
-                       where g.Id == gameId
-                       select g).ToList().FirstOrDefault();
-            User? user = (from u in _db.User
-                          where u.Id == userId
-                          select u).ToList().FirstOrDefault();
-            if (game is null || user is null)
-                return null!;
-            game.ClientUser = user;
-            _db.SaveChanges();
-
-            game.HostUser.IsReady = false;
-            return game;
-        }
-
-        public Game CreateGame(Game game, int userId)
-        {
-            try { _db = new ServerDbContext(); }
-            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
-            bool check = true;
-            var games = _db.Game.Include(item => item.ClientUser).Where(item => item.ClientUser == null).ToList();
-
-            foreach (var g in games)
-                if (g.Name == game.Name)
-                    check = false;
-            var user = (from u in _db.User
-                        where u.Id == userId
-                        select u).ToList().FirstOrDefault();
-
-            if (check && user is not null)
+            try
             {
-                _db.Game.Add(new Game()
+                await using ServerDbContext _db = new();
+
+                User? res = null;
+
+                foreach (User user in _db.User)
+                {
+                    if (user.Login == login && user.Password == pass)
+                    {
+                        res = user;
+                    }
+                }
+
+                return res;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public static async Task<List<Game>> GetGameList()
+        {
+            try
+            {
+                await using ServerDbContext _db = new();
+
+                List<Game> games = await _db.Game
+                    .Where(item => item.ClientUser == null)
+                    .Include(item => item.HostUser)
+                    .Include(item => item.ClientUser)
+                    .ToListAsync();
+
+                return games;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public static async Task<Game?> GetGame(int gameId)
+        {
+            try
+            {
+                await using ServerDbContext _db = new();
+
+                Game? game = await _db.Game
+                    .Where(item => item.Id == gameId)
+                    .Include(item => item.ClientUser)
+                    .FirstOrDefaultAsync();
+
+                return game;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public static async Task<Game?> JoinGame(int gameId, int userId)
+        {
+            try
+            {
+                await using ServerDbContext _db = new();
+
+                Game? game = await _db.Game
+                    .Where(item => item.Id == gameId)
+                    .Include(item => item.HostUser)
+                    .FirstOrDefaultAsync();
+
+                User? user = await _db.User.FirstOrDefaultAsync(item => item.Id == userId);
+
+                if (game is null || user is null)
+                {
+                    return null;
+                }
+
+                game.ClientUser = user;
+
+                await _db.SaveChangesAsync();
+
+                game.HostUser.IsReady = false;
+
+                return game;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public static async Task<Game?> CreateGame(Game game, int userId)
+        {
+            try
+            {
+                await using ServerDbContext _db = new();
+
+                foreach (Game g in _db.Game.Where(item => item.ClientUser == null))
+                {
+                    if (g.Name == game.Name)
+                    {
+                        return null;
+                    }
+                }
+
+                User? user = await _db.User.FirstOrDefaultAsync(item => item.Id == userId);
+
+                if (user is null)
+                {
+                    return null;
+                }
+
+                Game newGame = (await _db.Game.AddAsync(new()
                 {
                     Name = game.Name,
                     IsPrivate = game.IsPrivate,
                     Password = game.Password,
                     HostUser = user
-                });
-                _db.SaveChanges();
-                return (from g in _db.Game.Include(item => item.ClientUser)
-                       where g.Name.Equals(game.Name) && g.ClientUser == null
-                       select g).ToList().FirstOrDefault()??null!;
+                })).Entity;
+
+                await _db.SaveChangesAsync();
+
+                return newGame;
             }
-            return null!;
+            catch
+            {
+                throw;
+            }
         }
 
-        public string Ready(Field field, int userId, int gameId)
+        public static async Task<string> Ready(Field field, int userId, int gameId)
         {
-            try { _db = new ServerDbContext(); }
-            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return ex.Message; }
-
-            int fieldId = 0;
-
-            var user = (from u in _db.User
-                        where u.Id == userId
-                        select u).ToList().FirstOrDefault();
-            var game = (from g in _db.Game
-                        .Include(item => item.HostUser)
-                        .Include(item => item.ClientUser)
-                        .Include(item => item.HostField)
-                        .Include(item => item.ClientField)
-                        where g.Id == gameId
-                        select g).ToList().FirstOrDefault();
-            if (user is null)
-                return "Incorrect user ID";
-            if (game is null)
-                return "Incorrect game ID";
             try
             {
-                if(user.IsReady)
+                await using ServerDbContext _db = new();
+
+                int fieldId = 0;
+
+                User? user = await _db.User.FirstOrDefaultAsync(item => item.Id == userId);
+
+                Game? game = await _db.Game
+                    .Where(item => item.Id == gameId)
+                    .Include(item => item.HostUser)
+                    .Include(item => item.ClientUser)
+                    .Include(item => item.HostField)
+                    .Include(item => item.ClientField)
+                    .FirstOrDefaultAsync();
+
+                if (user is null)
+                {
+                    return "Incorrect user ID";
+                }
+
+                if (game is null)
+                {
+                    return "Incorrect game ID";
+                }
+
+                if (user.IsReady)
                 {
                     user.IsReady = false;
-                    _db.SaveChanges();
+
+                    await _db.SaveChangesAsync();
+
                     return "SUCCESS";
                 }
 
-                if (!CheckField(field))
+                if (CheckField(field) == false)
+                {
                     return "Incorrect ships placement";
+                }
 
                 if (userId == game.HostUser.Id)
                 {
-                    if (game.HostField == null)
+                    if (game.HostField is null)
                     {
                         game.HostField = field;
-                        _db.SaveChanges();
+
                         fieldId = -1;
                     }
-                    else fieldId = game.HostField.Id;
+                    else
+                    {
+                        fieldId = game.HostField.Id;
+                    }
                 }
                 else if (userId == game.ClientUser?.Id)
                 {
-                    if (game.ClientField == null)
+                    if (game.ClientField is null)
                     {
                         game.ClientField = field;
-                        _db.SaveChanges();
+
                         fieldId = -1;
                     }
-                    else fieldId = game.ClientField.Id;
+                    else
+                    {
+                        fieldId = game.ClientField.Id;
+                    }
                 }
                 else
-                    return "Incorrect user ID";
-
-                if(fieldId != -1)
                 {
-                    var cells = (from f in _db.Field
-                                     where f.Id == fieldId
-                                     select f.Cells).ToList().FirstOrDefault() ?? null!;
-                    for (int i = 0; i < cells.Count; i++)
+                    return "Incorrect user ID";
+                }
+
+                if (fieldId != -1)
+                {
+                    List<Cell>? cells = await _db.Field
+                                        .Where(item => item.Id == fieldId)
+                                        .Select(item => item.Cells)
+                                        .FirstOrDefaultAsync();
+
+                    for (int i = 0; i < cells?.Count; i++)
                     {
                         cells[i].IsContainsShip = field.Cells[i].IsContainsShip;
                         cells[i].IsHit = field.Cells[i].IsHit;
                     }
-                    _db.SaveChanges();
                 }
+
+                user.IsReady = true;
+
+                if (game.ClientUser is not null && game.HostUser.IsReady && game.ClientUser.IsReady)
+                {
+                    game.HostUser.IsTurn = true;
+                    game.ClientUser.IsTurn = false;
+                }
+
+                await _db.SaveChangesAsync();
+
+                return "SUCCESS";
             }
-            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message); return ex.Message; }
-
-            user.IsReady = true;
-
-            if (game.ClientUser is not null && game.HostUser.IsReady && game.ClientUser.IsReady)
+            catch
             {
-                game.HostUser.IsTurn = true;
-                game.ClientUser.IsTurn = false;
+                throw;
             }
-
-            _db.SaveChanges();
-            return "SUCCESS";
         }
-        public Game EnemyWait(int gameId, int userId)
+        public static async Task<Game?> EnemyWait(int gameId, int userId)
         {
-            try { _db = new ServerDbContext(); }
-            catch (Exception ex) { Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime database-releated error: " + ex.Message); return null!; }
-            var user = (from u in _db.User
-                        where u.Id == userId
-                        select u).FirstOrDefault();
-            var game = (from g in _db.Game
-                        .Include(item => item.HostUser)
-                        .Include(item => item.ClientUser)
-                        .Include(item => item.HostField)
-                            .ThenInclude(item => item.Cells)
-                        .Include(item => item.ClientField)
-                            .ThenInclude(item => item.Cells)
-                        .Include(item => item.Winner)
-                        where g.Id == gameId
-                        select g).FirstOrDefault();
-            if (user is null || game is null)
-                return null!;
-
-            if (game.ClientUser is not null && game.HostUser.IsReady && game.ClientUser.IsReady)
+            try
             {
-                if (user.Login == game.HostUser.Login)
+                await using ServerDbContext _db = new();
+
+                User? user = await _db.User.FirstOrDefaultAsync(item => item.Id == userId);
+
+                Game? game = await _db.Game
+                    .Where(item => item.Id == gameId)
+                    .Include(item => item.HostUser)
+                    .Include(item => item.ClientUser)
+                    .Include(item => item.HostField)
+                        .ThenInclude(item => item.Cells)
+                    .Include(item => item.ClientField)
+                        .ThenInclude(item => item.Cells)
+                    .Include(item => item.Winner)
+                    .FirstOrDefaultAsync();
+
+                if (user is null || game is null)
                 {
-                    for (int x = 0; x < game.ClientField?.Cells.Count; x++)
+                    return null;
+                }
+
+                if (game.ClientUser is not null && game.HostUser.IsReady && game.ClientUser.IsReady)
+                {
+                    if (userId == game.HostUser.Id)
                     {
-                        if (game.ClientField.Cells[x].IsHit == false)
+                        foreach (Cell cell in game.ClientField?.Cells!)
                         {
-                            game.ClientField.Cells[x].IsContainsShip = false;
+                            if (cell.IsHit == false)
+                            {
+                                cell.IsContainsShip = false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (Cell cell in game.HostField?.Cells!)
+                        {
+                            if (cell.IsHit == false)
+                            {
+                                cell.IsContainsShip = false;
+                            }
                         }
                     }
                 }
-                else
+
+                if (game.HostField?.Cells.Count(item => item.IsContainsShip && item.IsHit) == 20)
                 {
-                    for (int x = 0; x < game.HostField?.Cells.Count; x++)
-                    {
-                        if (game.HostField.Cells[x].IsHit == false)
-                        {
-                            game.HostField.Cells[x].IsContainsShip = false;
-                        }
-                    }
+                    game.Winner = game.ClientUser;
                 }
-            }
 
-            if (game.HostField?.Cells.Count(item => item.IsContainsShip && item.IsHit) == 20)
+                if (game.ClientField?.Cells.Count(item => item.IsContainsShip && item.IsHit) == 20)
+                {
+                    game.Winner = game.HostUser;
+                }
+
+                return game;
+            }
+            catch
             {
-                game.Winner = game.ClientUser;
+                throw;
             }
-
-            if (game.ClientField?.Cells.Count(item => item.IsContainsShip && item.IsHit) == 20)
-            {
-                game.Winner = game.HostUser;
-            }
-
-            return game;
         }
 
-        public static async Task<string?> Shoot(int fieldId, int gameId, int userId, int index)
+        public static async Task<string> Shoot(int fieldId, int gameId, int userId, int index)
         {
             try
             {
                 await using ServerDbContext context = new();
 
-                Field? field = context.Field
+                Field? field = await context.Field
+                    .Where(item => item.Id == fieldId)
                     .Include(item => item.Cells)
-                    .FirstOrDefault(item => item.Id == fieldId);
-                Game? game = context.Game
+                    .FirstOrDefaultAsync();
+
+                Game? game = await context.Game
+                    .Where(item => item.Id == gameId)
                     .Include(item => item.HostUser)
                     .Include(item => item.ClientUser)
-                    .FirstOrDefault(item => item.Id == gameId);
-                User? user = context.User.FirstOrDefault(item => item.Id == userId);
+                    .FirstOrDefaultAsync();
+
+                User? user = await context.User.FirstOrDefaultAsync(item => item.Id == userId);
 
                 if (field is null || game is null || user is null)
                 {
@@ -335,7 +431,7 @@ namespace Server
                 if (field.Cells[index].IsContainsShip)
                 {
                     game.HostUser.IsTurn = user.Login == game.HostUser.Login;
-                    game.ClientUser.IsTurn = user.Login == game.ClientUser.Login;
+                    game.ClientUser!.IsTurn = user.Login == game.ClientUser.Login;
 
                     List<int>? neighbours = [index];
 
@@ -380,16 +476,16 @@ namespace Server
                 else
                 {
                     game.HostUser.IsTurn = user.Login != game.HostUser.Login;
-                    game.ClientUser.IsTurn = user.Login == game.HostUser.Login;
+                    game.ClientUser!.IsTurn = user.Login == game.HostUser.Login;
                 }
 
                 await context.SaveChangesAsync();
 
-                return null;
+                return "SUCCESS";
             }
-            catch (Exception ex)
+            catch
             {
-                return ex.Message;
+                throw;
             }
         }
 

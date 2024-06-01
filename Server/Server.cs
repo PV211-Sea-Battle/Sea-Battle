@@ -5,30 +5,31 @@ using Models;
 using System.Runtime.Serialization;
 
 #pragma warning disable SYSLIB0011
-#pragma warning disable CS8600
-#pragma warning disable CS8602
-#pragma warning disable CS8604
 
 namespace Server
 {
     public class Server
     {
-        private static bool _isServerStarted = false;
-        private static bool _isExtendedLogsEnabled = false;
-        static async Task Main(string[] args)
+        private static bool _isServerStarted;
+        private static bool _isExtendedLogsEnabled;
+
+        private static IPEndPoint? ep;
+        private static TcpListener? listener;
+
+        private static readonly BinaryFormatter bf = new();
+        static async Task Main()
         {
             Console.Title = "Sea Battle Server";
 
-            string[] serverConfig = null!;
-            int port = 0;
-            IPAddress ipAddress = null!;
-
             try
             {
-                serverConfig = File.ReadAllText("../../../serverConfig.ini").Split(':');
-                _isExtendedLogsEnabled = Convert.ToBoolean(serverConfig[2]);
-                port = int.Parse(serverConfig[1]);
-                ipAddress = IPAddress.Parse(serverConfig[0]);
+                string[] serverConfig = File.ReadAllText("../../../serverConfig.ini").Split(':');
+
+                _isExtendedLogsEnabled = bool.Parse(serverConfig[2]);
+                int port = int.Parse(serverConfig[1]);
+                IPAddress address = IPAddress.Parse(serverConfig[0]);
+
+                ep = new(address, port);
             }
             catch (Exception ex)
             {
@@ -37,347 +38,295 @@ namespace Server
                 return;
             }
 
-            IPEndPoint ep;
-            TcpListener listener = null!;
-            BinaryFormatter bf = new();
-            DbServer db = new();
-
             while (true)
             {
                 if(_isServerStarted)
                 {
-                    _ = Task.Run(() =>
-                    {
-                        while (Console.ReadKey(true).Key != ConsoleKey.End) ;
-                        _isServerStarted = false;
-                        listener.Stop();
-                        Console.WriteLine($"\n\n[{DateTime.Now.ToLongTimeString()}] Server stopped.\n");
-                    });
                     try
                     {
-                        TcpClient acceptor = await listener.AcceptTcpClientAsync();
-                        NetworkStream ns = acceptor.GetStream();
+                        using TcpClient acceptor = await listener!.AcceptTcpClientAsync();
+                        await using NetworkStream ns = acceptor.GetStream();
+
                         Request request = (Request)bf.Deserialize(ns);
+                        Response response = new();
+
+                        string status = "FAILURE";
+
+                        DbServer db = new();
 
                         switch (request.Header)
                         {
                             case "SIGN IN":
-                                User user = request.User;
-                                string status = "FAILURE";
-                                string login = user.Login;
-                                string pass = user.Password;
-
-                                user = db.SignUp(login, pass);
+                                User? user = await DbServer.SignIn(request.User!.Login, request.User.Password);
+                                
                                 if (user is not null)
                                 {
-                                    var signResponse = new Response()
-                                    {
-                                        User = user
-                                    };
-                                    bf.Serialize(ns, signResponse);
+                                    response.User = user;
                                     status = "SUCCESS";
                                 }
                                 else
                                 {
-                                    var signResponse = new Response()
-                                    {
-                                        ErrorMessage = "An error occured during authentication:\nIncorrect login or password."
-                                    };
-                                    bf.Serialize(ns, signResponse);
+                                    response.ErrorMessage = "An error occured during authentication:\nIncorrect login or password.";
                                 }
 
-                                await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
-                                    $"{request.Header} request. Login: {request.User.Login} | Status: {status} \n");
+                                await Log($"{request.Header} request. Login: {request.User.Login} | Status: {status} \n");
                                 break;
+
                             case "REGISTER":
-                                user = request.User;
-                                status = "FAILURE";
-                                login = user.Login;
-                                pass = user.Password;
-
-                                if (db.RegisterUser(login, pass))
+                                if (await DbServer.RegisterUser(request.User!.Login, request.User.Password))
                                 {
-                                    var regResponse = new Response()
-                                    {
-                                        User = db.SignUp(login, pass)
-                                    };
-                                    bf.Serialize(ns, regResponse);
+                                    response.User = await DbServer.SignIn(request.User.Login, request.User.Password);
                                     status = "SUCCESS";
                                 }
                                 else
                                 {
-                                    var regResponse = new Response()
-                                    {
-                                        ErrorMessage = "An error occured during registration:\nLogin was taken."
-                                    };
-                                    bf.Serialize(ns, regResponse);
+                                    response.ErrorMessage = "An error occured during registration:\nLogin was taken.";
                                 }
 
-                                await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
-                                    $"{request.Header} request. Login: {request.User.Login} | Status: {status} \n");
+                                await Log($"{request.Header} request. Login: {request.User.Login} | Status: {status} \n");
                                 break;
+
                             case "GAME LIST":
-                                var res = db.GetGameList();
-                                status = "FAILURE";
-                                if(res is not null)
+                                List<Game> res = await DbServer.GetGameList();
+
+                                if (res is not null)
                                 {
-                                    var glResponse = new Response()
-                                    {
-                                        Games = res
-                                    };
-                                    bf.Serialize(ns, glResponse);
+                                    response.Games = res;
                                     status = "SUCCESS";
                                 }
                                 else
                                 {
-                                    var glResponse = new Response()
-                                    {
-                                        ErrorMessage = "An error occured during getting games list from database.\nCheck server console for details."
-                                    };
-                                    bf.Serialize(ns, glResponse);
+                                    response.ErrorMessage = "An error occured during getting games list from database.\nCheck server console for details.";
                                 }
 
                                 if (_isExtendedLogsEnabled)
-                                    await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}][EXT-LOG] " +
-                                        $"{request.Header} request. | Status: {status} \n");
+                                {
+                                    await Log($"[EXT - LOG] {request.Header} request. | Status: {status} \n");
+                                }
                                 break;
-                            case "JOIN":
-                                Game game = db.GetGame(request.Game.Id);
-                                user = request.User;
-                                string? gamePassword = request.Game.Password;
-                                status = "FAILURE";
 
-                                if(game is not null)
+                            case "JOIN":
+                                Game? game = await DbServer.GetGame(request.Game!.Id);
+
+                                if (game is not null)
                                 {
                                     if (game.ClientUser is null)
                                     {
                                         if (game.IsPrivate)
                                         {
-                                            if (gamePassword == game.Password)
+                                            if (request.Game.Password == game.Password)
                                             {
-                                                game = db.JoinGame(game.Id, user.Id);
+                                                game = await DbServer.JoinGame(game.Id, request.User!.Id);
+
                                                 if (game is not null)
+                                                {
                                                     status = "SUCCESS";
+                                                }
                                             }
-                                            else status = "FAILURE-INCORR_PASS";
+                                            else 
+                                            {
+                                                status = "FAILURE-INCORR_PASS";
+                                            }
                                         }
                                         else
                                         {
-                                            game = db.JoinGame(game.Id, user.Id);
+                                            game = await DbServer.JoinGame(game.Id, request.User!.Id);
+
                                             if (game is not null)
+                                            {
                                                 status = "SUCCESS";
+                                            }
                                         }
                                     }
-                                    else status = "FAILURE-GAME_FULL";
-                                }
-                                
-
-                                if(status == "SUCCESS")
-                                {
-                                    var joinResponse = new Response()
+                                    else 
                                     {
-                                        Game = game
-                                    };
-                                    bf.Serialize(ns, joinResponse);
+                                        status = "FAILURE-GAME_FULL";
+                                    }
+                                }
+
+                                if (status == "SUCCESS")
+                                {
+                                    response.Game = game;
                                 }
                                 else
                                 {
-                                    var joinResponse = new Response();
-                                    switch (status)
+                                    response.ErrorMessage = status switch
                                     {
-                                        case "FAILURE-INCORR_PASS":
-                                            joinResponse.ErrorMessage = "Failed to join the game:\nIncorrect password.";
-                                            break;
-                                        case "FAILURE-GAME_FULL":
-                                            joinResponse.ErrorMessage = "Failed to join the game:\nGame is full.";
-                                            break;
-                                        default:
-                                            joinResponse.ErrorMessage = "Failed to join the game:\nGame or user does not exist.";
-                                            break;
-                                    }
-                                    bf.Serialize(ns, joinResponse);
+                                        "FAILURE-INCORR_PASS" => "Failed to join the game:\nIncorrect password.",
+                                        "FAILURE-GAME_FULL" => "Failed to join the game:\nGame is full.",
+                                        _ => "Failed to join the game:\nGame or user does not exist.",
+                                    };
                                 }
 
-                                await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
-                                    $"{request.Header} request. Login: {request.User.Login}. Room Name: {request.Game.Name} | Status: {status} \n");
+                                await Log($"{request.Header} request. Login: {request.User?.Login}. Room Name: {request.Game.Name} | Status: {status} \n");
                                 break;
-                            case "CREATE":
-                                game = db.CreateGame(request.Game, request.User.Id);
-                                status = "FAILURE";
 
-                                if(game is not null)
+                            case "CREATE":
+                                game = await DbServer.CreateGame(request.Game!, request.User!.Id);
+
+                                if (game is not null)
                                 {
-                                    var crResponce = new Response()
-                                    {
-                                        Game = game
-                                    };
-                                    bf.Serialize(ns, crResponce);
+                                    response.Game = game;
                                     status = "SUCCESS";
                                 }
                                 else
                                 {
-                                    var crResponce = new Response()
-                                    {
-                                        ErrorMessage = "Failed to create the game:\nName was already taken or user does not exist"
-                                    };
-                                    bf.Serialize(ns, crResponce);
+                                    response.ErrorMessage = "Failed to create the game:\nName was already taken or user does not exist";
                                 }
 
-                                await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
-                                    $"{request.Header} request. Login: {request.User.Login}. Room Name: {request.Game.Name} | Status: {status} \n");
+                                await Log($"{request.Header} request. Login: {request.User.Login}. Room Name: {request.Game?.Name} | Status: {status} \n");
                                 break;
+
                             case "READY":
-                                status = db.Ready(request.Field, request.User.Id, request.Game.Id);
-                                var rdResponce = new Response();
+                                status = await DbServer.Ready(request.Field!, request.User!.Id, request.Game!.Id);
+
                                 if (status != "SUCCESS")
                                 {
-                                    rdResponce.ErrorMessage = status;
+                                    response.ErrorMessage = status;
                                     status = "FAILURE";
                                 }
-                                bf.Serialize(ns, rdResponce);
 
                                 if (_isExtendedLogsEnabled)
-                                    await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}][EXT-LOG] " +
-                                        $"{request.Header} request. | UserId: {request.User.Id} | Status: {status} \n");
-                                break;
-                            case "ENEMY WAIT":
-                                Game Game = db.EnemyWait(request.Game.Id, request.User.Id);
-                                status = "FAILURE";
-
-                                if (Game is not null)
                                 {
-                                    var ewResponse = new Response()
-                                    {
-                                        Game = Game
-                                    };
-                                    bf.Serialize(ns, ewResponse);
+                                    await Log($"[EXT - LOG] {request.Header} request. | UserId: {request.User.Id} | Status: {status} \n");
+                                }
+                                break;
+
+                            case "ENEMY WAIT":
+                                game = await DbServer.EnemyWait(request.Game!.Id, request.User!.Id);
+
+                                if (game is not null)
+                                {
+                                    response.Game = game;
                                     status = "SUCCESS";
                                 }
                                 else
                                 {
-                                    var ewResponse = new Response()
-                                    {
-                                        ErrorMessage = "Error:\nInvalid user or game"
-                                    };
-                                    bf.Serialize(ns, ewResponse);
+                                    response.ErrorMessage = "Error:\nInvalid user or game";
                                 }
 
                                 if (_isExtendedLogsEnabled)
-                                    await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}][EXT-LOG] " +
-                                        $"{request.Header} request. | GameId: {request.Game.Id} | " +
-                                        $"UserId: {request.User.Id} | Status: {status} \n");
-                                break;
-                            case "SHOOT":
-                                string? error = await DbServer.Shoot(request.Field.Id, request.Game.Id, request.User.Id, request.Index.Value);
-                                status = "SUCCESS";
-
-                                if (error is not null)
                                 {
+                                    await Log($"[EXT - LOG] {request.Header} request. | GameId: {request.Game.Id} | UserId: {request.User.Id} | Status: {status} \n");
+                                }
+                                break;
+
+                            case "SHOOT":
+                                status = await DbServer.Shoot(request.Field.Id, request.Game.Id, request.User.Id, request.Index.Value);
+
+                                if (status != "SUCCESS")
+                                {
+                                    response.ErrorMessage = status;
                                     status = "FAILURE";
                                 }
 
-                                Response sresponse = new()
-                                {
-                                    ErrorMessage = error
-                                };
-                                bf.Serialize(ns, sresponse);
-
-                                await Console.Out.WriteLineAsync($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
-                                        $"{request.Header} request. | GameId: {request.Game.Id} | " +
-                                        $"UserId: {request.User.Id} | Status: {status} \n");
+                                await Log($"{request.Header} request. | GameId: {request.Game.Id} | UserId: {request.User.Id} | Status: {status} \n");
                                 break;
+
                             default:
-                                var defaultResponse = new Response()
-                                {
-                                    ErrorMessage = "Incorrect request header"
-                                };
-                                bf.Serialize(ns, defaultResponse);
+                                response.ErrorMessage = "Incorrect request header";
                                 break;
                         }
 
-                        acceptor.Close();
-                        ns.Close();
+                        bf.Serialize(ns, response);
                     }
                     catch (IOException) { }
                     catch (SocketException) { }
                     catch (SerializationException) { }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.ToString());
+                        Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Runtime error: " + ex.Message);
                         return;
                     }
                 }
                 else
                 {
-                    string? choice;
-                    do
-                    {
-                        Console.Write("Available commands:" +
-                        "\n'START' - Start the server." +
-                        $"\n'EDIT' - Edit address file. Current address is {ipAddress}:{port}" +
-                        "\n'VIEWDB' - View first 5 rows of every table in database." +
-                        "\n'LOGS' - Switch the extended server logs. Current status: ");
-                        if (_isExtendedLogsEnabled) Console.Write("ON"); else Console.Write("OFF");
+                    Console.Clear();
 
-                        Console.Write("\n'EXIT' - Close the application.\n>");
-                        choice = await Console.In.ReadLineAsync();
-                    }
-                    while (choice.ToLower().Trim() != "start" && choice.ToLower().Trim() != "edit" && 
-                    choice.ToLower().Trim() != "viewdb" && choice.ToLower().Trim() != "logs" &&
-                    choice.ToLower().Trim() != "exit");
+                    Console.Write("Available commands:" +
+                    "\n'START' - Start the server." +
+                    $"\n'EDIT' - Edit address file. Current address is {ep.Address}:{ep.Port}" +
+                    "\n'VIEWDB' - View first 5 rows of every table in database." +
+                    "\n'LOGS' - Switch the extended server logs. Current status: ");
+                    if (_isExtendedLogsEnabled) Console.Write("ON"); else Console.Write("OFF");
+
+                    Console.Write("\n'EXIT' - Close the application.\n>");
+                    string choice = Console.ReadLine() ?? "";
                     
-                    switch(choice.ToLower().Trim())
+                    switch (choice.ToLower().Trim())
                     {
                         case "start":
                             try
                             {
-                                ep = new IPEndPoint(ipAddress, port);
                                 listener = new TcpListener(ep);
                                 listener.Start();
                                 _isServerStarted = true;
-                                Console.WriteLine($"\n\n[{DateTime.Now.ToLongTimeString()}] " +
-                                    $"Server started with address {ipAddress}:{port}. Press End to stop it.\n");
+
+                                _ = Task.Run(StopThread);
+
+                                await Log($"Server started with address {ep.Address}:{ep.Port}. Press End to stop it.\n");
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] Server starting error: " + ex.Message);
-                                return;
+                                await LogError("Server starting error: " + ex.Message);
                             }
                             break;
+
                         case "edit":
                             try
                             {
-                                await Console.Out.WriteAsync("\nEnter IP address> ");
-                                ipAddress = IPAddress.Parse(await Console.In.ReadLineAsync() ?? "");
-                                await Console.Out.WriteAsync("\nEnter port> ");
-                                port = int.Parse(await Console.In.ReadLineAsync() ?? "");
+                                await Log("Enter IP address> ");
+                                IPAddress address = IPAddress.Parse(Console.ReadLine() ?? "");
 
-                                File.WriteAllText("../../../serverConfig.ini", $"{ipAddress}:{port}:{_isExtendedLogsEnabled}");
+                                await Log("Enter port> ");
+                                int port = int.Parse(Console.In.ReadLine() ?? "");
+
+                                ep = new(address, port);
+
+                                File.WriteAllText("../../../serverConfig.ini", $"{address}:{port}:{_isExtendedLogsEnabled}");
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"\n[{DateTime.Now.ToLongTimeString()}] IP/Port editing error: " + ex.Message);
-                                return;
+                                await Log("IP/Port editing error: " + ex.Message);
                             }
                             break;
-                        case "viewdb":
-                            db.ShowFirst5RowsOfEveryTable();
-                            break;
-                        case "logs":
-                            if (_isExtendedLogsEnabled)
-                                _isExtendedLogsEnabled = false;
-                            else
-                                _isExtendedLogsEnabled = true;
 
-                            File.WriteAllText("../../../serverConfig.ini", $"{ipAddress}:{port}:{_isExtendedLogsEnabled}");
+                        case "viewdb":
+                            await DbServer.ShowFirst5RowsOfEveryTable();
+
+                            await LogError(string.Empty);
                             break;
+
+                        case "logs":
+                            _isExtendedLogsEnabled ^= true;
+
+                            File.WriteAllText("../../../serverConfig.ini", $"{ep.Address}:{ep.Port}:{_isExtendedLogsEnabled}");
+                            break;
+
                         case "exit":
                             return;
                     }
                 }
             }
+        }
 
-            
+        private static void StopThread()
+        {
+            while (Console.ReadKey(true).Key != ConsoleKey.End) { }
+
+            _isServerStarted = false;
+            listener?.Stop();
+        }
+
+        private static async Task Log(string message)
+            => await Console.Out.WriteLineAsync($"\n[{DateTime.Now.ToLongTimeString()}] {message}");
+
+        private static async Task LogError(string message)
+        {
+            await Log(message);
+
+            Console.Write("\nPress any button to continue");
+            Console.ReadKey();
         }
     }
 }

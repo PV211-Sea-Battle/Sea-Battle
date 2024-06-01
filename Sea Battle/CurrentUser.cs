@@ -54,6 +54,11 @@ namespace Sea_Battle
         }
         public static void SwitchWindow<T>(Window currentWindow) where T : Window
         {
+            if (Application.Current.Windows.OfType<T>().Any())
+            {
+                return;
+            }
+
             if (Activator.CreateInstance(typeof(T)) is T window)
             {
                 window.Show();

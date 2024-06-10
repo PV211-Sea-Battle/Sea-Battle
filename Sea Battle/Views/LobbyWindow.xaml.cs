@@ -1,5 +1,4 @@
-﻿using Models;
-using Sea_Battle.Infrastructure;
+﻿using Sea_Battle.Infrastructure;
 using Sea_Battle.ViewModels;
 using System.Windows;
 using System.Windows.Controls;
@@ -93,17 +92,7 @@ namespace Sea_Battle.Views
                 }
             };
 
-        private async void Window_Closed(object sender, EventArgs e)
-        {
-            Request request = new()
-            {
-                Header = "OFFLINE",
-                User = CurrentUser.user
-            };
-
-            await CurrentUser.SendMessageAsync(request, false);
-
-            ((LobbyWindowViewModel)DataContext).cancellationTokenSource.Cancel();
-        }
+        private void Window_Closed(object sender, EventArgs e)
+            => ((LobbyWindowViewModel)DataContext).cancellationTokenSource.Cancel();
     }
 }

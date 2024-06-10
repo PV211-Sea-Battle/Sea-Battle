@@ -23,6 +23,14 @@ namespace Sea_Battle.ViewModels
         public ICommand CreateCommand { get; }
         public MainMenuWindowViewModel(Window window)
         {
+            Request request = new()
+            {
+                Header = "OFFLINE",
+                User = CurrentUser.user
+            };
+
+            _ = CurrentUser.SendMessageAsync(request, false);
+
             this.window = window;
 
             Task.Run(Refresh);

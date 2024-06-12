@@ -9,7 +9,6 @@
         Title="Connect to game"
         Height="400"
         Width="380"
-        WindowStartupLocation="CenterScreen"
         Style="{StaticResource WindowDarkStyle}">
     <GroupBox Header="Connect"
               Margin="10">

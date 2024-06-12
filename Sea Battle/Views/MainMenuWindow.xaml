@@ -9,7 +9,6 @@
         Title="Main Menu"
         Height="700"
         Width="1200"
-        WindowStartupLocation="CenterScreen"
         Style="{StaticResource WindowDarkStyle}"
         Closed="Window_Closed">
     <DockPanel Margin="10">

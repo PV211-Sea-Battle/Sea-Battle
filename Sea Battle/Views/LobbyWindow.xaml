@@ -7,7 +7,6 @@
         Title="Lobby"
         Height="600"
         Width="1200"
-        WindowStartupLocation="CenterScreen"
         Style="{StaticResource WindowDarkStyle}"
         Closed="Window_Closed">
     <Grid>

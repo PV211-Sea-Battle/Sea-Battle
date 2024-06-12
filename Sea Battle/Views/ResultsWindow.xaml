@@ -7,7 +7,6 @@
         Title="Game Results"
         Height="800"
         Width="600"
-        WindowStartupLocation="CenterScreen"
         Style="{StaticResource WindowDarkStyle}">
     <GroupBox Header="Results"
               Margin="10">

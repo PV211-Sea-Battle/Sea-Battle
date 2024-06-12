@@ -8,7 +8,6 @@
         Title="Authorization"
         Height="750"
         Width="450"
-        WindowStartupLocation="CenterScreen"
         Style="{StaticResource WindowDarkStyle}">
     <GroupBox Header="Authorization"
               Margin="10">

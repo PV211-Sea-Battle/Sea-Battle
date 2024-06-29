@@ -23,7 +23,7 @@ namespace Server
 
             try
             {
-                string[] serverConfig = File.ReadAllText("../../../serverConfig.ini").Split(':');
+                string[] serverConfig = File.ReadAllText("serverConfig.ini").Split(':');
 
                 _isExtendedLogsEnabled = bool.Parse(serverConfig[2]);
                 int port = int.Parse(serverConfig[1]);
